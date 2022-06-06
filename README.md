@@ -1,0 +1,2 @@
+# lazi
+Lazy iterator library
