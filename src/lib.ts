@@ -1,11 +1,11 @@
 import { Flatten, MapToIterType, TupleToUnion, Unzip } from "./types/utils";
 import LaziError from "./types/lazi-error";
 
-export function iter<T>(input: T | Iterable<T>): LazyIterator<T> {
+export function iter<T>(input: T | Iterable<T>): LaziIterator<T> {
     if (Symbol.iterator in Object(input))
-        return new LazyIterator(input as Iterable<T>);
+        return new LaziIterator(input as Iterable<T>);
 
-    return new LazyIterator([input] as Iterable<T>);
+    return new LaziIterator([input] as Iterable<T>);
 }
 
 export function range(start: number, end: number, step = 1) {
@@ -18,7 +18,7 @@ export function range(start: number, end: number, step = 1) {
     return iter(iterable);
 }
 
-export class LazyIterator<T> {
+export class LaziIterator<T> {
     private transformer: () => Generator<T>;
 
     constructor(iterable: Iterable<T>) {
@@ -47,7 +47,7 @@ export class LazyIterator<T> {
 
     map<F extends (val: T, index: number) => any>(
         func: F
-    ): LazyIterator<ReturnType<F>> {
+    ): LaziIterator<ReturnType<F>> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -97,7 +97,7 @@ export class LazyIterator<T> {
         );
     }
 
-    skipWhile(pred: (val: T, index: number) => boolean): LazyIterator<T> {
+    skipWhile(pred: (val: T, index: number) => boolean): LaziIterator<T> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -181,7 +181,7 @@ export class LazyIterator<T> {
         return this.reduce((acc) => acc + 1, 0);
     }
 
-    flatten(): LazyIterator<Flatten<T>> {
+    flatten(): LaziIterator<Flatten<T>> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -249,7 +249,7 @@ export class LazyIterator<T> {
         );
     }
 
-    enumerate(): LazyIterator<[T, number]> {
+    enumerate(): LaziIterator<[T, number]> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -285,7 +285,7 @@ export class LazyIterator<T> {
 
     zip<I extends Iterable<any>[]>(
         ...iterables: I
-    ): LazyIterator<[T, ...MapToIterType<I>]> {
+    ): LaziIterator<[T, ...MapToIterType<I>]> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -428,7 +428,7 @@ export class LazyIterator<T> {
 
     chain<I extends Iterable<any>[]>(
         ...iterables: I
-    ): LazyIterator<T | TupleToUnion<MapToIterType<I>>> {
+    ): LaziIterator<T | TupleToUnion<MapToIterType<I>>> {
         const previous = this.transformer.bind(this);
 
         return iter(

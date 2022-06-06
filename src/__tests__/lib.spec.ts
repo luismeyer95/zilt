@@ -12,9 +12,14 @@ describe("iter", () => {
     });
 
     it("should create a single element iterator", () => {
+        let count = 0;
+
         for (const item of iter(7)) {
             expect(item).toBe(7);
+            count += 1;
         }
+
+        expect(count).toBe(1);
     });
 });
 
@@ -178,6 +183,12 @@ describe("reduce", () => {
     });
 });
 
+describe("count", () => {
+    it("should return the iterator length", () => {
+        expect(range(4, 9).count()).toBe(5);
+    });
+});
+
 describe("flatten", () => {
     it("should flatten array of arrays", () => {
         const result = iter([
@@ -331,6 +342,10 @@ describe("unzip", () => {
             [1, 2, 3],
             [2, 3, 4],
         ]);
+    });
+
+    it("should throw when unzipping on iterable of non-iterables", () => {
+        expect(() => range(0, 5).unzip()).toThrowError();
     });
 });
 
@@ -496,5 +511,17 @@ describe("max by key", () => {
         const it = iter([{ a: 4 }, { a: 3 }, { a: 8 }, { a: 7 }]);
 
         expect(it.maxByKey((e) => e.a)).toMatchObject({ a: 8 });
+    });
+});
+
+describe("chaos", () => {
+    it("should work", () => {
+        const it = range(0, 3)
+            .chain(iter(3), iter(4), [5, 6, 7])
+            .cycle()
+            .stepBy(3)
+            .take(9);
+
+        expect(it.collect()).toMatchObject([0, 3, 6, 1, 4, 7, 2, 5, 0]);
     });
 });
