@@ -1,8 +1,11 @@
-import { Flatten, MapToIterType, PickIterType } from './types/utils';
-import LaziError from './types/lazi-error';
+import { Flatten, MapToIterType, TupleToUnion, Unzip } from "./types/utils";
+import LaziError from "./types/lazi-error";
 
-export function iter<T>(iterable: Iterable<T>) {
-    return new LazyIterator(iterable);
+export function iter<T>(input: T | Iterable<T>): LazyIterator<T> {
+    if (Symbol.iterator in Object(input))
+        return new LazyIterator(input as Iterable<T>);
+
+    return new LazyIterator([input] as Iterable<T>);
 }
 
 export function range(start: number, end: number, step = 1) {
@@ -59,7 +62,7 @@ export class LazyIterator<T> {
         );
     }
 
-    filter<F extends (val: T, index: number) => boolean>(func: F) {
+    filter(func: (val: T, index: number) => boolean) {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -77,6 +80,8 @@ export class LazyIterator<T> {
     }
 
     skip(num: number) {
+        if (num < 0) throw new LaziError("Invalid skip parameter");
+
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -92,9 +97,7 @@ export class LazyIterator<T> {
         );
     }
 
-    skipWhile<F extends (val: T, index: number) => boolean>(
-        pred: F
-    ): LazyIterator<T> {
+    skipWhile(pred: (val: T, index: number) => boolean): LazyIterator<T> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -117,9 +120,9 @@ export class LazyIterator<T> {
     }
 
     take(num: number) {
-        const previous = this.transformer.bind(this);
+        if (num < 0) throw new LaziError("Invalid take parameter");
 
-        num = Math.max(0, num);
+        const previous = this.transformer.bind(this);
 
         return iter(
             (function* () {
@@ -132,7 +135,7 @@ export class LazyIterator<T> {
         );
     }
 
-    takeWhile<F extends (val: T, index: number) => boolean>(pred: F) {
+    takeWhile(pred: (val: T, index: number) => boolean) {
         const previous = this.transformer.bind(this);
 
         this.transformer = function* () {
@@ -160,7 +163,7 @@ export class LazyIterator<T> {
         let first = iter.next();
         if (initializer === null && first.done) {
             throw new TypeError(
-                'Reduce of empty iterator with no initial value'
+                "Reduce of empty iterator with no initial value"
             );
         }
 
@@ -220,7 +223,7 @@ export class LazyIterator<T> {
     }
 
     windows(windowLen: number) {
-        if (windowLen <= 0) throw new LaziError('Invalid window length');
+        if (windowLen <= 0) throw new LaziError("Invalid window length");
 
         const previous = this.transformer.bind(this);
 
@@ -246,7 +249,7 @@ export class LazyIterator<T> {
         );
     }
 
-    enumerate(): LazyIterator<[number, T]> {
+    enumerate(): LazyIterator<[T, number]> {
         const previous = this.transformer.bind(this);
 
         return iter(
@@ -254,7 +257,7 @@ export class LazyIterator<T> {
                 let index = 0;
 
                 for (const item of previous()) {
-                    yield [index, item];
+                    yield [item, index] as [T, number];
                     index += 1;
                 }
             })()
@@ -262,7 +265,7 @@ export class LazyIterator<T> {
     }
 
     stepBy(step: number) {
-        if (step <= 0) throw new LaziError('Invalid step');
+        if (step <= 0) throw new LaziError("Invalid step");
 
         const previous = this.transformer.bind(this);
 
@@ -289,7 +292,7 @@ export class LazyIterator<T> {
             (function* () {
                 const iters = [
                     previous(),
-                    ...iterables.map((it) => it[Symbol.iterator]())
+                    ...iterables.map((it) => it[Symbol.iterator]()),
                 ];
 
                 let results = iters.map((it) => it.next());
@@ -304,183 +307,203 @@ export class LazyIterator<T> {
         );
     }
 
-    // unzip() {
-    //     const previous = this.transformer.bind(this);
+    unzip(): Unzip<T> {
+        let outLists: any = [];
 
-    //     this.transformer = function* () {
-    //         const left = [];
-    //         const right = [];
+        const updateLen = (n: number) => {
+            const oldLen = outLists.length;
+            outLists.length = Math.max(oldLen, n);
+            for (let i = oldLen; i < outLists.length; i++) {
+                outLists[i] = [];
+            }
+        };
 
-    //         for (const [l, r] of previous()) {
-    //             left.push(l);
-    //             right.push(r);
-    //         }
+        for (const item of this.transformer()) {
+            if (Array.isArray(item) === false) {
+                throw new LaziError("Element type is not an array");
+            }
 
-    //         yield left;
-    //         yield right;
-    //     };
+            const list: any = item;
+            updateLen(list.length);
 
-    //     return this;
-    // }
+            let index = 0;
+            for (const elem of list) {
+                outLists[index].push(elem);
+                index += 1;
+            }
+        }
 
-    // flatMap(func) {
-    //     return this.map(func).flatten();
-    // }
+        return outLists;
+    }
 
-    // partition(pred) {
-    //     const previous = this.transformer.bind(this);
+    flatMap<F extends (val: T, index: number) => any>(func: F) {
+        return this.map(func).flatten();
+    }
 
-    //     this.transformer = function* () {
-    //         const left = [];
-    //         const right = [];
+    partition(pred: (val: T, index: number) => boolean) {
+        const left = [];
+        const right = [];
+        let index = 0;
 
-    //         for (const item of previous()) {
-    //             if (pred(item)) {
-    //                 left.push(item);
-    //             } else {
-    //                 right.push(item);
-    //             }
-    //         }
+        for (const item of this.transformer()) {
+            if (pred(item, index)) {
+                left.push(item);
+            } else {
+                right.push(item);
+            }
+            index += 1;
+        }
 
-    //         yield left;
-    //         yield right;
-    //     };
+        return [left, right];
+    }
 
-    //     return this;
-    // }
+    nth(n: number) {
+        if (n < 0) return undefined;
 
-    // nth(n) {
-    //     return this.skip(n)[Symbol.iterator]().next().value;
-    // }
+        return this.skip(n)[Symbol.iterator]().next().value;
+    }
 
-    // first() {
-    //     return this.nth(0);
-    // }
+    first() {
+        return this.nth(0);
+    }
 
-    // last() {
-    //     let last;
+    last() {
+        let last;
 
-    //     for (const element of this.transformer()) {
-    //         last = element;
-    //     }
+        for (const element of this.transformer()) {
+            last = element;
+        }
 
-    //     return last;
-    // }
+        return last;
+    }
 
-    // all(pred) {
-    //     for (const element of this.transformer()) {
-    //         if (!pred(element)) {
-    //             return false;
-    //         }
-    //     }
+    all(pred: (val: T, index: number) => boolean) {
+        let index = 0;
 
-    //     return true;
-    // }
+        for (const element of this.transformer()) {
+            if (!pred(element, index)) {
+                return false;
+            }
+            index += 1;
+        }
 
-    // any(pred) {
-    //     for (const element of this.transformer()) {
-    //         if (pred(element)) {
-    //             return true;
-    //         }
-    //     }
+        return true;
+    }
 
-    //     return false;
-    // }
+    any(pred: (val: T, index: number) => boolean) {
+        let index = 0;
 
-    // find(pred) {
-    //     for (const element of this.transformer()) {
-    //         if (pred(element)) {
-    //             return element;
-    //         }
-    //     }
-    // }
+        for (const element of this.transformer()) {
+            if (pred(element, index)) {
+                return true;
+            }
+            index += 1;
+        }
 
-    // chain(iterable) {
-    //     const previous = this.transformer.bind(this);
+        return false;
+    }
 
-    //     this.transformer = function* () {
-    //         for (const item of previous()) {
-    //             yield item;
-    //         }
+    find(pred: (val: T, index: number) => boolean) {
+        let index = 0;
 
-    //         for (const item of iterable) {
-    //             yield item;
-    //         }
-    //     };
+        for (const element of this.transformer()) {
+            if (pred(element, index)) {
+                return element;
+            }
+            index += 1;
+        }
+    }
 
-    //     return this;
-    // }
+    position(pred: (val: T, index: number) => boolean) {
+        let index = 0;
 
-    // cycle() {
-    //     const previous = this.transformer.bind(this);
-    //     const buffered = [];
+        for (const element of this.transformer()) {
+            if (pred(element, index)) {
+                return index;
+            }
 
-    //     this.transformer = function* () {
-    //         for (const item of previous()) {
-    //             buffered.push(item);
-    //             yield item;
-    //         }
+            index += 1;
+        }
+    }
 
-    //         while (true) {
-    //             for (const item of buffered) {
-    //                 yield item;
-    //             }
-    //         }
-    //     };
+    chain<I extends Iterable<any>[]>(
+        ...iterables: I
+    ): LazyIterator<T | TupleToUnion<MapToIterType<I>>> {
+        const previous = this.transformer.bind(this);
 
-    //     return this;
-    // }
+        return iter(
+            (function* () {
+                for (const item of previous()) {
+                    yield item;
+                }
 
-    // forEach(func) {
-    //     let index = 0;
+                for (const it of iterables) {
+                    for (const item of it) {
+                        yield item;
+                    }
+                }
+            })()
+        );
+    }
 
-    //     for (const element of this.transformer()) {
-    //         func(element, index);
-    //         index += 1;
-    //     }
-    // }
+    cycle() {
+        const previous = this.transformer.bind(this);
+        const buffered: T[] = [];
 
-    // minByKey(getKey) {
-    //     let minKey = Infinity,
-    //         minElement;
+        return iter(
+            (function* () {
+                for (const item of previous()) {
+                    buffered.push(item);
+                    yield item;
+                }
 
-    //     for (const element of this.transformer()) {
-    //         const key = getKey(element);
+                while (true) {
+                    for (const item of buffered) {
+                        yield item;
+                    }
+                }
+            })()
+        );
+    }
 
-    //         if (key < minKey) {
-    //             minKey = key;
-    //             minElement = element;
-    //         }
-    //     }
+    forEach(func: (val: T, index: number) => unknown) {
+        let index = 0;
 
-    //     return minElement;
-    // }
+        for (const element of this.transformer()) {
+            func(element, index);
+            index += 1;
+        }
+    }
 
-    // maxByKey(getKey) {
-    //     let maxKey = -Infinity,
-    //         maxElement;
+    minByKey(getKey: (element: T) => number) {
+        let minKey = Infinity,
+            minElement;
 
-    //     for (const element of this.transformer()) {
-    //         const key = getKey(element);
+        for (const element of this.transformer()) {
+            const key = getKey(element);
 
-    //         if (key > maxKey) {
-    //             maxKey = key;
-    //             maxElement = element;
-    //         }
-    //     }
+            if (key < minKey) {
+                minKey = key;
+                minElement = element;
+            }
+        }
 
-    //     return maxElement;
-    // }
+        return minElement;
+    }
 
-    // position(pred) {
-    //     let index = 0;
+    maxByKey(getKey: (element: T) => number) {
+        let maxKey = -Infinity,
+            maxElement;
 
-    //     for (const element of this.transformer()) {
-    //         if (pred(element)) {
-    //             return index;
-    //         }
+        for (const element of this.transformer()) {
+            const key = getKey(element);
 
-    //         index += 1;
-    //     }
-    // }
+            if (key > maxKey) {
+                maxKey = key;
+                maxElement = element;
+            }
+        }
+
+        return maxElement;
+    }
 }

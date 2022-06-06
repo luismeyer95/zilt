@@ -1,3 +1,3 @@
-# Typescript/Node.js Template
+# Lazi
 
-Custom project setup for Typescript and Node.js. Includes basic Jest, ESLint and Prettier configs.
+Lazy iterator library
