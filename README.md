@@ -1,3 +1,3 @@
 # Lazi
 
-Lazy iterator library
+A lazy iterator library in TypeScript

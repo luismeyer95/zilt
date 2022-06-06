@@ -1,5 +1,5 @@
-import { Flatten, MapToIterType, TupleToUnion, Unzip } from "./types/utils";
-import LaziError from "./types/lazi-error";
+import { Flatten, MapToIterType, TupleToUnion, Unzip } from "./utils";
+import LaziError from "./lazi.error";
 
 export function iter<T>(input: T | Iterable<T>): LaziIterator<T> {
     if (Symbol.iterator in Object(input))
