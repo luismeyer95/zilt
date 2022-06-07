@@ -551,7 +551,7 @@ describe("chaos", () => {
         expect(it.collect()).toMatchObject([0, 3, 6, 1, 4, 7, 2, 5, 0]);
     });
 
-    it("should zigzag", () => {
+    it("should draw a zigzag pattern in the matrix", () => {
         const expected = [
             [1, 0, 0, 1, 0, 0, 1, 0, 0],
             [1, 0, 1, 1, 0, 1, 1, 0, 1],
@@ -559,7 +559,7 @@ describe("chaos", () => {
             [1, 0, 0, 1, 0, 0, 1, 0, 0],
         ];
 
-        const gen = (mat: number[][]) => {
+        const draw = (mat: number[][]) => {
             let height = mat.length,
                 width = mat[0].length;
 
@@ -581,7 +581,7 @@ describe("chaos", () => {
             .fill(0)
             .map((ln) => Array(expected[0].length).fill(0));
 
-        expect(gen(mat)).toMatchObject(expected);
+        expect(draw(mat)).toMatchObject(expected);
     });
 
     it("should compute the rate of space chars per line after doubling each char + wrapping on row length 8", () => {

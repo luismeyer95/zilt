@@ -552,7 +552,6 @@ export class LaziIterator<T> {
         if (count < 0) throw new LaziError("Invalid stretch parameter");
 
         const previous = this.generator.bind(this);
-        const buffered: T[] = [];
 
         return iter(
             (function* () {
