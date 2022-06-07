@@ -1,4 +1,10 @@
-import { Flatten, MapToIterType, TupleToUnion, Unzip } from "./utils";
+import {
+    Flatten,
+    MapToIterType,
+    RecursiveFlatten,
+    TupleToUnion,
+    Unzip,
+} from "./utils";
 import LaziError from "./lazi.error";
 
 /**
@@ -65,13 +71,7 @@ export class LaziIterator<T> {
     }
 
     collect() {
-        const result = [];
-
-        for (const item of this) {
-            result.push(item);
-        }
-
-        return result;
+        return [...this];
     }
 
     map<F extends (val: T, index: number) => any>(
@@ -206,13 +206,10 @@ export class LaziIterator<T> {
         return acc;
     }
 
-    accumulate(func: (acc: T, element: T) => T): LaziIterator<T>;
-    accumulate(
-        func: (acc: T, element: T) => T,
-        initializer: T
-    ): LaziIterator<T>;
+    accumulate(f: (acc: T, element: T) => T): LaziIterator<T>;
+    accumulate(f: (acc: T, element: T) => T, initializer: T): LaziIterator<T>;
     accumulate<U>(
-        func: (acc: U, element: T) => U,
+        f: (acc: U, element: T) => U,
         initializer: U
     ): LaziIterator<U>;
     accumulate(func: any, initializer: any = null) {
@@ -258,22 +255,22 @@ export class LaziIterator<T> {
         return count / total;
     }
 
-    flatten(): LaziIterator<Flatten<T>> {
-        const previous = this.generator.bind(this);
+    flatten<N extends number>(
+        maxDepth: N
+    ): LaziIterator<RecursiveFlatten<N, T>> {
+        if (maxDepth < 0) throw new LaziError("Invalid depth for flatten");
 
-        return iter(
-            (function* () {
-                for (const sublist of previous()) {
-                    if (Symbol.iterator in Object(sublist)) {
-                        for (const item of sublist as any) {
-                            yield item;
-                        }
-                    } else {
-                        yield sublist;
-                    }
+        function* recurse<U>(depth: number, it: Iterable<U>): any {
+            for (const item of it) {
+                if (Symbol.iterator in Object(item) && depth !== maxDepth) {
+                    yield* recurse(depth + 1, item as any);
+                } else {
+                    yield item;
                 }
-            })()
-        );
+            }
+        }
+
+        return iter(recurse(0, this.generator()));
     }
 
     chunks(chunkLen: number) {
@@ -414,7 +411,7 @@ export class LaziIterator<T> {
     }
 
     flatMap<F extends (val: T, index: number) => any>(func: F) {
-        return this.map(func).flatten();
+        return this.map(func).flatten(1);
     }
 
     partition(pred: (val: T, index: number) => boolean) {
@@ -454,7 +451,7 @@ export class LaziIterator<T> {
         return last;
     }
 
-    all(pred: (val: T, index: number) => boolean) {
+    every(pred: (val: T, index: number) => boolean) {
         let index = 0;
 
         for (const element of this.generator()) {
@@ -467,7 +464,7 @@ export class LaziIterator<T> {
         return true;
     }
 
-    any(pred: (val: T, index: number) => boolean) {
+    some(pred: (val: T, index: number) => boolean) {
         let index = 0;
 
         for (const element of this.generator()) {
@@ -605,5 +602,47 @@ export class LaziIterator<T> {
         }
 
         return maxElement;
+    }
+
+    unique() {
+        return this.uniqueBy((elem) => elem);
+    }
+
+    uniqueBy(getKey: (element: T) => unknown) {
+        const previous = this.generator.bind(this);
+
+        return iter(
+            (function* () {
+                const seen = new Set();
+
+                for (const item of previous()) {
+                    if (seen.has(getKey(item)) === false) {
+                        yield item;
+                        seen.add(getKey(item));
+                    }
+                }
+            })()
+        );
+    }
+
+    tap(func: (element: T) => unknown) {
+        const previous = this.generator.bind(this);
+
+        return iter(
+            (function* () {
+                for (const item of previous()) {
+                    func(item);
+                    yield item;
+                }
+            })()
+        );
+    }
+
+    slice(start: number, end: number = Infinity) {
+        if (start < 0 || end < 0 || start > end) {
+            throw new LaziError("Invalid slice range");
+        }
+
+        return this.skip(start).take(end - start);
     }
 }

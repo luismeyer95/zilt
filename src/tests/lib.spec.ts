@@ -213,7 +213,7 @@ describe("flatten", () => {
             [0, 1],
             [2, 3],
         ])
-            .flatten()
+            .flatten(1)
             .collect();
 
         expect(result).toMatchObject([0, 1, 2, 3]);
@@ -221,9 +221,23 @@ describe("flatten", () => {
 
     it("should flatten mixed depth array", () => {
         const arr = [0, [1], [[2]]];
-        const result = iter(arr).flatten().collect();
+        const result = iter(arr).flatten(1).collect();
 
         expect(result).toMatchObject([0, 1, [2]]);
+    });
+
+    it("should deep flatten mixed depth array", () => {
+        const arr = [0, [1], [[2]]];
+        const result = iter(arr).flatten(2).collect();
+
+        expect(result).toMatchObject([0, 1, 2]);
+    });
+
+    it("should no-op on 0 depth", () => {
+        const arr = [0, [1], [[2]]];
+        const result = iter(arr).flatten(0).collect();
+
+        expect(result).toMatchObject([0, [1], [[2]]]);
     });
 });
 
@@ -422,17 +436,17 @@ describe("first/last", () => {
     });
 });
 
-describe("any/all", () => {
+describe("", () => {
     it("any should return true on any predicate call true", () => {
         const it = iter([1, 2, 3]);
-        expect(it.any((n) => n === 2)).toBe(true);
-        expect(it.any((n) => n === 4)).toBe(false);
+        expect(it.some((n) => n === 2)).toBe(true);
+        expect(it.some((n) => n === 4)).toBe(false);
     });
 
     it("all should return true on all predicate calls true", () => {
         const it = iter([1, 2, 3]);
-        expect(it.all((n) => n === 2)).toBe(false);
-        expect(it.all((n) => n < 4)).toBe(true);
+        expect(it.every((n) => n === 2)).toBe(false);
+        expect(it.every((n) => n < 4)).toBe(true);
     });
 });
 
@@ -540,6 +554,47 @@ describe("max by key", () => {
     });
 });
 
+describe("unique", () => {
+    it("should filter out duplicates", () => {
+        const it = iter([0, 1, 1, 2, 3, 3, 2, 4, 1, 5]);
+
+        expect(it.unique().collect()).toMatchObject([0, 1, 2, 3, 4, 5]);
+        expect(it.uniqueBy((n) => n).collect()).toMatchObject([
+            0, 1, 2, 3, 4, 5,
+        ]);
+    });
+});
+
+describe("tap", () => {
+    it("should invoke callback on yielded values", () => {
+        const out: number[] = [];
+
+        range(0, 5)
+            .tap((n) => out.push(n))
+            .map((n) => n * 10)
+            .tap((n) => out.push(n))
+            .collect();
+
+        expect(out).toMatchObject([0, 0, 1, 10, 2, 20, 3, 30, 4, 40]);
+    });
+});
+
+describe("slice", () => {
+    it("should filter out values outside the slice range", () => {
+        const it = range(2, 7).slice(1, 3);
+
+        expect(it.collect()).toMatchObject([3, 4]);
+    });
+
+    it("should throw on invalid range", () => {
+        const it = range(2, 7);
+
+        expect(() => it.slice(-1).collect()).toThrowError();
+        expect(() => it.slice(2, 1).collect()).toThrowError();
+        expect(() => it.slice(1, -1).collect()).toThrowError();
+    });
+});
+
 describe("chaos", () => {
     it("should work", () => {
         const it = range(0, 3)
@@ -560,18 +615,16 @@ describe("chaos", () => {
         ];
 
         const draw = (mat: number[][]) => {
-            let height = mat.length,
-                width = mat[0].length;
+            const down = [1, 0];
+            const upRight = [-1, 1];
 
-            const stepIt = once([1, 0])
-                .chain(once([-1, 1]))
-                .stretch(height - 1)
+            const stepIt = iter([down, upRight])
+                .stretch(mat.length - 1)
                 .cycle();
 
-            once([0, 0])
-                .chain(stepIt)
+            chain(once([0, 0]), stepIt)
                 .accumulate(([y, x], [ys, xs]) => [y + ys, x + xs])
-                .takeWhile(([_, x]) => x < width)
+                .takeWhile(([_, x]) => x < mat[0].length)
                 .forEach(([y, x]) => (mat[y][x] = 1));
 
             return mat;
@@ -579,7 +632,7 @@ describe("chaos", () => {
 
         const mat = Array(expected.length)
             .fill(0)
-            .map((ln) => Array(expected[0].length).fill(0));
+            .map((_) => Array(expected[0].length).fill(0));
 
         expect(draw(mat)).toMatchObject(expected);
     });
@@ -612,7 +665,7 @@ describe("chaos", () => {
 
         const result = () =>
             iter([...text])
-                .flatMap((ch) => iter(ch).cycle(2))
+                .stretch(2)
                 .chunks(8)
                 .map((line) => iter(line).rate((ch) => ch === " "))
                 .collect();
