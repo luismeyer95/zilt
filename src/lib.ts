@@ -1,13 +1,39 @@
 import { Flatten, MapToIterType, TupleToUnion, Unzip } from "./utils";
 import LaziError from "./lazi.error";
 
-export function iter<T>(input: T | Iterable<T>): LaziIterator<T> {
-    if (Symbol.iterator in Object(input))
-        return new LaziIterator(input as Iterable<T>);
-
-    return new LaziIterator([input] as Iterable<T>);
+/**
+ * Creates a Lazi iterator from a regular iterable or a single value.
+ */
+export function iter<T>(input: Iterable<T>): LaziIterator<T> {
+    return new LaziIterator(input);
 }
 
+export function once<T>(value: T): LaziIterator<T> {
+    return new LaziIterator(
+        (function* () {
+            yield value;
+        })()
+    );
+}
+
+export function chain<T>(...iterables: Iterable<T>[]): LaziIterator<T> {
+    return new LaziIterator(
+        (function* () {
+            for (const it of iterables) {
+                for (const item of it) {
+                    yield item;
+                }
+            }
+        })()
+    );
+}
+
+/**
+ * Creates a Lazi iterator over a specified range of numbers and step.
+ * @param start the start of the range
+ * @param end the end of the range (excluded)
+ * @param step the iteration step (defaults to 1)
+ */
 export function range(start: number, end: number, step = 1) {
     const iterable = (function* () {
         for (let i = start; i !== end; i += step) {
@@ -18,11 +44,14 @@ export function range(start: number, end: number, step = 1) {
     return iter(iterable);
 }
 
+/**
+ * Lazi Iterator
+ */
 export class LaziIterator<T> {
-    private transformer: () => Generator<T>;
+    private generator: () => Generator<T>;
 
     constructor(iterable: Iterable<T>) {
-        this.transformer = function* () {
+        this.generator = function* () {
             for (const item of iterable) {
                 yield item;
             }
@@ -30,7 +59,7 @@ export class LaziIterator<T> {
     }
 
     *[Symbol.iterator]() {
-        for (const item of this.transformer()) {
+        for (const item of this.generator()) {
             yield item;
         }
     }
@@ -48,7 +77,7 @@ export class LaziIterator<T> {
     map<F extends (val: T, index: number) => any>(
         func: F
     ): LaziIterator<ReturnType<F>> {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -63,7 +92,7 @@ export class LaziIterator<T> {
     }
 
     filter(func: (val: T, index: number) => boolean) {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -82,7 +111,7 @@ export class LaziIterator<T> {
     skip(num: number) {
         if (num < 0) throw new LaziError("Invalid skip parameter");
 
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -98,7 +127,7 @@ export class LaziIterator<T> {
     }
 
     skipWhile(pred: (val: T, index: number) => boolean): LaziIterator<T> {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -122,7 +151,7 @@ export class LaziIterator<T> {
     take(num: number) {
         if (num < 0) throw new LaziError("Invalid take parameter");
 
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -136,9 +165,9 @@ export class LaziIterator<T> {
     }
 
     takeWhile(pred: (val: T, index: number) => boolean) {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
-        this.transformer = function* () {
+        this.generator = function* () {
             let iter = previous();
             let value = iter.next().value;
             let index = 0;
@@ -177,12 +206,60 @@ export class LaziIterator<T> {
         return acc;
     }
 
-    count() {
-        return this.reduce((acc) => acc + 1, 0);
+    accumulate(func: (acc: T, element: T) => T): LaziIterator<T>;
+    accumulate(
+        func: (acc: T, element: T) => T,
+        initializer: T
+    ): LaziIterator<T>;
+    accumulate<U>(
+        func: (acc: U, element: T) => U,
+        initializer: U
+    ): LaziIterator<U>;
+    accumulate(func: any, initializer: any = null) {
+        const previous = this[Symbol.iterator]();
+
+        // Empty iterator without initializer, return early
+        let first = previous.next();
+        if (initializer === null && first.done) {
+            throw new TypeError(
+                "Reduce of empty iterator with no initial value"
+            );
+        }
+
+        return iter(
+            (function* () {
+                let acc =
+                    initializer === null
+                        ? first.value
+                        : func(initializer, first.value);
+
+                yield acc;
+
+                for (const item of previous) {
+                    acc = func(acc, item);
+                    yield acc;
+                }
+            })()
+        );
+    }
+
+    count(pred: (val: T) => boolean = () => true) {
+        return this.reduce((acc, val) => (pred(val) ? acc + 1 : acc), 0);
+    }
+
+    rate(pred: (val: T) => boolean) {
+        let total = 0;
+
+        const count = this.reduce((acc, val) => {
+            total += 1;
+            return pred(val) ? acc + 1 : acc;
+        }, 0);
+
+        return count / total;
     }
 
     flatten(): LaziIterator<Flatten<T>> {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -200,7 +277,7 @@ export class LaziIterator<T> {
     }
 
     chunks(chunkLen: number) {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -225,7 +302,7 @@ export class LaziIterator<T> {
     windows(windowLen: number) {
         if (windowLen <= 0) throw new LaziError("Invalid window length");
 
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -250,7 +327,7 @@ export class LaziIterator<T> {
     }
 
     enumerate(): LaziIterator<[T, number]> {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -267,7 +344,7 @@ export class LaziIterator<T> {
     stepBy(step: number) {
         if (step <= 0) throw new LaziError("Invalid step");
 
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -286,7 +363,7 @@ export class LaziIterator<T> {
     zip<I extends Iterable<any>[]>(
         ...iterables: I
     ): LaziIterator<[T, ...MapToIterType<I>]> {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -318,7 +395,7 @@ export class LaziIterator<T> {
             }
         };
 
-        for (const item of this.transformer()) {
+        for (const item of this.generator()) {
             if (Array.isArray(item) === false) {
                 throw new LaziError("Element type is not an array");
             }
@@ -345,7 +422,7 @@ export class LaziIterator<T> {
         const right = [];
         let index = 0;
 
-        for (const item of this.transformer()) {
+        for (const item of this.generator()) {
             if (pred(item, index)) {
                 left.push(item);
             } else {
@@ -370,7 +447,7 @@ export class LaziIterator<T> {
     last() {
         let last;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             last = element;
         }
 
@@ -380,7 +457,7 @@ export class LaziIterator<T> {
     all(pred: (val: T, index: number) => boolean) {
         let index = 0;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             if (!pred(element, index)) {
                 return false;
             }
@@ -393,7 +470,7 @@ export class LaziIterator<T> {
     any(pred: (val: T, index: number) => boolean) {
         let index = 0;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             if (pred(element, index)) {
                 return true;
             }
@@ -406,7 +483,7 @@ export class LaziIterator<T> {
     find(pred: (val: T, index: number) => boolean) {
         let index = 0;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             if (pred(element, index)) {
                 return element;
             }
@@ -417,7 +494,7 @@ export class LaziIterator<T> {
     position(pred: (val: T, index: number) => boolean) {
         let index = 0;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             if (pred(element, index)) {
                 return index;
             }
@@ -429,7 +506,7 @@ export class LaziIterator<T> {
     chain<I extends Iterable<any>[]>(
         ...iterables: I
     ): LaziIterator<T | TupleToUnion<MapToIterType<I>>> {
-        const previous = this.transformer.bind(this);
+        const previous = this.generator.bind(this);
 
         return iter(
             (function* () {
@@ -446,19 +523,43 @@ export class LaziIterator<T> {
         );
     }
 
-    cycle() {
-        const previous = this.transformer.bind(this);
+    cycle(count: number | null = null) {
+        if (count !== null && count < 0)
+            throw new LaziError("Invalid count parameter");
+
+        const previous = this.generator.bind(this);
         const buffered: T[] = [];
 
         return iter(
             (function* () {
+                if (count === 0) return;
+
                 for (const item of previous()) {
                     buffered.push(item);
                     yield item;
                 }
 
-                while (true) {
+                while (count === null ? true : --count) {
                     for (const item of buffered) {
+                        yield item;
+                    }
+                }
+            })()
+        );
+    }
+
+    stretch(count: number) {
+        if (count < 0) throw new LaziError("Invalid stretch parameter");
+
+        const previous = this.generator.bind(this);
+        const buffered: T[] = [];
+
+        return iter(
+            (function* () {
+                if (count === 0) return;
+
+                for (const item of previous()) {
+                    for (const _ of range(0, count)) {
                         yield item;
                     }
                 }
@@ -469,7 +570,7 @@ export class LaziIterator<T> {
     forEach(func: (val: T, index: number) => unknown) {
         let index = 0;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             func(element, index);
             index += 1;
         }
@@ -479,7 +580,7 @@ export class LaziIterator<T> {
         let minKey = Infinity,
             minElement;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             const key = getKey(element);
 
             if (key < minKey) {
@@ -495,7 +596,7 @@ export class LaziIterator<T> {
         let maxKey = -Infinity,
             maxElement;
 
-        for (const element of this.transformer()) {
+        for (const element of this.generator()) {
             const key = getKey(element);
 
             if (key > maxKey) {

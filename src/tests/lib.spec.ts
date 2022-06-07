@@ -1,4 +1,4 @@
-import { range, iter } from "../lib";
+import { range, iter, once, chain } from "../lib";
 
 describe("iter", () => {
     it("should create an array iterator", () => {
@@ -14,7 +14,7 @@ describe("iter", () => {
     it("should create a single element iterator", () => {
         let count = 0;
 
-        for (const item of iter(7)) {
+        for (const item of once(7)) {
             expect(item).toBe(7);
             count += 1;
         }
@@ -183,6 +183,24 @@ describe("reduce", () => {
     });
 });
 
+describe("accumulate", () => {
+    it("should accumulate elements using callback", () => {
+        const it = range(0, 5).accumulate((acc, n) => acc + n);
+        expect(it.collect()).toMatchObject([0, 1, 3, 6, 10]);
+    });
+
+    it("should accumulate elements using callback and initializer", () => {
+        const it = range(0, 5).accumulate((acc, n) => acc + n, 5);
+        expect(it.collect()).toMatchObject([5, 6, 8, 11, 15]);
+    });
+
+    it("should throw on accumulate without initializer and empty iterator", () => {
+        const sequence: number[] = [];
+        const operation = () => iter(sequence).accumulate((acc, n) => acc + n);
+        expect(operation).toThrowError();
+    });
+});
+
 describe("count", () => {
     it("should return the iterator length", () => {
         expect(range(4, 9).count()).toBe(5);
@@ -344,7 +362,7 @@ describe("unzip", () => {
         ]);
     });
 
-    it("should throw when unzipping on iterable of non-iterables", () => {
+    it("should throw when unzipping on iterator of non-iterables", () => {
         expect(() => range(0, 5).unzip()).toThrowError();
     });
 });
@@ -473,12 +491,20 @@ describe("chain", () => {
 });
 
 describe("cycle", () => {
-    it("should cycle", () => {
+    it("should cycle indefinitely", () => {
         const it = iter([1, 2, 3]);
 
         expect(it.cycle().take(8).collect()).toMatchObject([
             1, 2, 3, 1, 2, 3, 1, 2,
         ]);
+    });
+
+    it("should cycle 3 times", () => {
+        expect(once(0).cycle(3).collect()).toMatchObject([0, 0, 0]);
+    });
+
+    it("should throw on negative cycle count", () => {
+        expect(() => once(0).cycle(-1)).toThrowError();
     });
 });
 
@@ -517,11 +543,80 @@ describe("max by key", () => {
 describe("chaos", () => {
     it("should work", () => {
         const it = range(0, 3)
-            .chain(iter(3), iter(4), [5, 6, 7])
+            .chain(once(3), once(4), [5, 6, 7])
             .cycle()
             .stepBy(3)
             .take(9);
 
         expect(it.collect()).toMatchObject([0, 3, 6, 1, 4, 7, 2, 5, 0]);
+    });
+
+    it("should zigzag", () => {
+        const expected = [
+            [1, 0, 0, 1, 0, 0, 1, 0, 0],
+            [1, 0, 1, 1, 0, 1, 1, 0, 1],
+            [1, 1, 0, 1, 1, 0, 1, 1, 0],
+            [1, 0, 0, 1, 0, 0, 1, 0, 0],
+        ];
+
+        const gen = (mat: number[][]) => {
+            let height = mat.length,
+                width = mat[0].length;
+
+            const stepIt = once([1, 0])
+                .chain(once([-1, 1]))
+                .stretch(height - 1)
+                .cycle();
+
+            once([0, 0])
+                .chain(stepIt)
+                .accumulate(([y, x], [ys, xs]) => [y + ys, x + xs])
+                .takeWhile(([_, x]) => x < width)
+                .forEach(([y, x]) => (mat[y][x] = 1));
+
+            return mat;
+        };
+
+        const mat = Array(expected.length)
+            .fill(0)
+            .map((ln) => Array(expected[0].length).fill(0));
+
+        expect(gen(mat)).toMatchObject(expected);
+    });
+
+    it("should compute the rate of space chars per line after doubling each char + wrapping on row length 8", () => {
+        const text = "Hi hey hello hola bonjour";
+
+        const expected = () => {
+            const doubled = [...text]
+                .map((l) => [...l.repeat(2)])
+                .flat(1)
+                .join("");
+
+            const lines = [];
+            let current = [];
+            for (const letter of doubled) {
+                current.push(letter);
+                if (current.length === 8) {
+                    lines.push(current.join(""));
+                    current = [];
+                }
+            }
+            if (current.length) lines.push(current.join(""));
+
+            return lines.map((line) => {
+                const spaces = line.split(" ").length - 1;
+                return spaces / line.length;
+            });
+        };
+
+        const result = () =>
+            iter([...text])
+                .flatMap((ch) => iter(ch).cycle(2))
+                .chunks(8)
+                .map((line) => iter(line).rate((ch) => ch === " "))
+                .collect();
+
+        expect(result()).toMatchObject(expected());
     });
 });

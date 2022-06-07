@@ -1,6 +1,8 @@
-export type Flatten<ArrType> = ArrType extends readonly (infer ElementType)[]
+export type Flatten<T> = T extends readonly (infer ElementType)[]
     ? ElementType
-    : ArrType;
+    : T extends Iterable<infer E>
+    ? E
+    : T;
 
 export type PickIterType<I> = I extends Iterable<infer E> ? E : never;
 
