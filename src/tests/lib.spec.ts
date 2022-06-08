@@ -452,14 +452,14 @@ describe("first/last", () => {
     });
 });
 
-describe("", () => {
-    it("any should return true on any predicate call true", () => {
+describe("every/some", () => {
+    it("some should return true on any predicate call true", () => {
         const it = iter([1, 2, 3]);
         expect(it.some((n) => n === 2)).toBe(true);
         expect(it.some((n) => n === 4)).toBe(false);
     });
 
-    it("all should return true on all predicate calls true", () => {
+    it("every should return true on all predicate calls true", () => {
         const it = iter([1, 2, 3]);
         expect(it.every((n) => n === 2)).toBe(false);
         expect(it.every((n) => n < 4)).toBe(true);
@@ -558,7 +558,7 @@ describe("min by key", () => {
     it("should get min using key predicate", () => {
         const it = iter([{ a: 4 }, { a: 3 }, { a: 8 }, { a: 7 }]);
 
-        expect(it.minByKey((e) => e.a)).toMatchObject({ a: 3 });
+        expect(it.min((e) => e.a)).toMatchObject({ a: 3 });
     });
 });
 
@@ -566,7 +566,7 @@ describe("max by key", () => {
     it("should get max using key predicate", () => {
         const it = iter([{ a: 4 }, { a: 3 }, { a: 8 }, { a: 7 }]);
 
-        expect(it.maxByKey((e) => e.a)).toMatchObject({ a: 8 });
+        expect(it.max((e) => e.a)).toMatchObject({ a: 8 });
     });
 });
 

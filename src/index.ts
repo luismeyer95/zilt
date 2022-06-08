@@ -40,6 +40,5 @@ function printMatrix(matrix: number[][]) {
 // const matrix = draw(createMatrix(17, 199));
 // printMatrix(matrix);
 
-const res = iter([10, 15, 15, 20]).count((n) => n === 15); // 6
-// '0123'
+const res = range(2).nestRange(-2).collect(); // 6
 console.log(res);
