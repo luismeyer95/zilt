@@ -331,10 +331,8 @@ describe("step", () => {
     });
 
     it("should error on step <= 0", () => {
-        const stepper = (n: number) => () => iter([1]).step(n);
-
-        expect(stepper(0)).toThrowError();
-        expect(stepper(-1)).toThrowError();
+        expect(() => iter([1]).step(0)).toThrowError();
+        expect(() => iter([1]).step(-1)).toThrowError();
     });
 });
 
