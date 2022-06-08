@@ -39,6 +39,10 @@ function printMatrix(matrix: number[][]) {
 
 // const matrix = draw(createMatrix(17, 199));
 // printMatrix(matrix);
-
-const res = range(2).nestRange(-2).collect(); // 6
-console.log(res);
+const out: number[] = [];
+const res = range(1, 4)
+    .inspect((n) => out.push(n))
+    .map((n) => n * 10)
+    .inspect((n) => out.push(n))
+    .consume();
+console.log(out);

@@ -2,9 +2,12 @@ import { MapToIterType, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
 import AzilError from "./azil.error";
 
 /**
- * Creates an iterator from a regular iterable or a single value.
+ * Creates an iterator from an iterable.
+ *
  * @example
- * iter([0, 1, 2]).collect() // [0, 1, 2]
+ * // [0, 1, 2]
+ * iter([0, 1, 2])
+ *   .collect();
  */
 export function iter<T>(input: Iterable<T>): AzilIterator<T> {
     return new AzilIterator(input);
@@ -12,8 +15,11 @@ export function iter<T>(input: Iterable<T>): AzilIterator<T> {
 
 /**
  * Creates an iterator over a single value.
+ *
  * @example
- * once(['hello']).collect() // [['hello']]
+ * // [['hello']]
+ * once(['hello'])
+ *   .collect();
  */
 export function once<T>(value: T): AzilIterator<T> {
     return new AzilIterator(
@@ -25,8 +31,11 @@ export function once<T>(value: T): AzilIterator<T> {
 
 /**
  * Creates an iterator that yields the values of each passed iterable in sequence.
+ *
  * @example
- * chain([0, 1], ['foo']).collect(); // [0, 1, 'foo']
+ * // [0, 1, 'foo']
+ * chain([0, 1], ['foo'])
+ *   .collect();
  */
 export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
     return new AzilIterator(
@@ -89,17 +98,36 @@ class AzilIterator<T> {
 
     /**
      * Consumes the iterator to collect its values in an array and returns it.
+     *
      * @example
-     * range(0, 3).collect() // [0, 1, 2]
+     * // [0, 1, 2]
+     * range(0, 3)
+     *   .collect();
      */
     collect() {
         return [...this];
     }
 
     /**
-     * Creates an iterator that transforms each value in the original iterator using the passed function parameter.
+     * Consumes the iterator.
+     *
      * @example
-     * range(0, 4).map((n) => n * 2).collect() // [0, 2, 4, 6]
+     * range(0, 3)
+     *   .consume();
+     */
+    consume() {
+        for (const item of this) {
+        }
+    }
+
+    /**
+     * Creates an iterator that transforms each value in the original iterator using the passed function parameter.
+     *
+     * @example
+     * // [0, 2, 4, 6]
+     * range(0, 4)
+     *   .map((n) => n * 2)
+     *   .collect();
      */
     map<F extends (val: T, index: number) => any>(
         func: F
@@ -120,9 +148,12 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator which uses a callback to determine if an element should be yielded.
+     *
      * @example
-     * range(0, 4).filter((n) => n % 2 === 1).collect();
-     * // => [1, 3]
+     * // [1, 3]
+     * range(0, 4)
+     *   .filter((n) => n % 2 === 1)
+     *   .collect();
      */
     filter(func: (val: T, index: number) => boolean) {
         const previous = this.generator.bind(this);
@@ -143,9 +174,12 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator which skips the first `num` values.
+     *
      * @example
-     * range(0, 6).skip(3).collect();
-     * // => [3, 4, 5]
+     * // [3, 4, 5]
+     * range(0, 6)
+     *   .skip(3)
+     *   .collect();
      */
     skip(num: number) {
         if (num < 0) throw new AzilError("Invalid skip parameter");
@@ -167,9 +201,12 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator which skips values while a predicate is true.
+     *
      * @example
-     * range(0, 6).skipWhile((n) => n < 3).collect();
-     * // => [3, 4, 5]
+     * // [3, 4, 5]
+     * range(0, 6)
+     *   .skipWhile((n) => n < 3)
+     *   .collect();
      */
     skipWhile(pred: (val: T, index: number) => boolean): AzilIterator<T> {
         const previous = this.generator.bind(this);
@@ -195,9 +232,12 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator which only keeps the first `num` values.
+     *
      * @example
-     * range(0, 6).take(3).collect();
-     * // => [0, 1, 2]
+     * // [0, 1, 2]
+     * range(0, 6)
+     *   .take(3)
+     *   .collect();
      */
     take(num: number) {
         if (num < 0) throw new AzilError("Invalid take parameter");
@@ -217,9 +257,12 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator which yields values until a predicate is false.
+     *
      * @example
-     * range(0, 6).takeWhile((n) => n < 3).collect();
-     * // => [0, 1, 2]
+     * // [0, 1, 2]
+     * range(0, 6)
+     *   .takeWhile((n) => n < 3)
+     *   .collect();
      */
     takeWhile(pred: (val: T, index: number) => boolean) {
         const previous = this.generator.bind(this);
@@ -242,9 +285,17 @@ class AzilIterator<T> {
     /**
      * Consumes the iterator to produce a single value using a given function.
      * @example
-     * range(0, 4).reduce((acc, n) => acc + n); // 6
-     * range(0, 4).reduce((acc, n) => acc + n, 1); // 7
-     * range(0, 4).reduce((acc, n) => acc + n.toString(), ''); // '0123'
+     * // 6
+     * range(0, 4)
+     *   .reduce((acc, n) => acc + n);
+     *
+     * // 7
+     * range(0, 4)
+     *   .reduce((acc, n) => acc + n, 1);
+     *
+     * // '0123'
+     * range(0, 4)
+     *   .reduce((acc, n) => acc + n.toString(), '');
      */
     reduce(func: (acc: T, element: T) => T): T;
     reduce(func: (acc: T, element: T) => T, initializer: T): T;
@@ -272,14 +323,15 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator which updates an accumulator using a function argument (similar to reduce, but yielding the accumulator at every step).
+     *
      * @example
      * // [0, 1, 3, 6, 10]
      * range(0, 5)
      *   .accumulate((acc, n) => acc + n)
      *   .collect();
      *
-     * // [2, 3, 5, 8]
-     * range(0, 4)
+     * // [2, 3, 5, 8, 12]
+     * range(0, 5)
      *   .accumulate((acc, n) => acc + n, 2)
      *   .collect();
      */
@@ -319,6 +371,7 @@ class AzilIterator<T> {
 
     /**
      * Consumes the iterator and returns the number of elements that match a predicate.
+     *
      * @example
      * const arr = [10, 15, 15, 20];
      * iter(arr).count(); // 4
@@ -330,6 +383,7 @@ class AzilIterator<T> {
 
     /**
      * Consumes the iterator and returns the percentage of elements that match a predicate.
+     *
      * @example
      * const arr = [10, 15, 15, 20];
      * iter(arr).rate((n) => n === 15); // 0.5
@@ -349,9 +403,15 @@ class AzilIterator<T> {
      * Creates an iterator which flattens nested array elements up to a certain depth (`maxDepth`).
      *
      * @example
-     * const arr = [[0, 1], [2, [3]]];
-     * iter(arr).flatten(1).collect(); // [0, 1, 2, [3]]
-     * iter(arr).flatten(2).collect(); // [0, 1, 2, 3]
+     * // [0, 1, 2, [3]]
+     * iter([[0, 1], [2, [3]]])
+     *   .flatten(1)
+     *   .collect();
+     *
+     * // [0, 1, 2, 3]
+     * iter([[0, 1], [2, [3]]])
+     *   .flatten(2)
+     *   .collect();
      */
     flatten<N extends number>(
         maxDepth: N
@@ -379,7 +439,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [[0, 1], [2, 3], [4]]
-     * iter([0, 1, 2, 3, 4]).chunks(2).collect();
+     * iter([0, 1, 2, 3, 4])
+     *   .chunks(2)
+     *   .collect();
      */
     chunks(k: number) {
         const previous = this.generator.bind(this);
@@ -409,7 +471,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [[0, 1], [1, 2], [2, 3], [3, 4]]
-     * iter([0, 1, 2, 3, 4]).windows(2).collect();
+     * iter([0, 1, 2, 3, 4])
+     *   .windows(2)
+     *   .collect();
      */
     windows(k: number) {
         if (k <= 0) throw new AzilError("Invalid window length");
@@ -443,7 +507,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [[4, 0], [5, 1], [6, 2]]
-     * iter([4, 5, 6]).enumerate().collect();
+     * iter([4, 5, 6])
+     *   .enumerate()
+     *   .collect();
      */
     enumerate(): AzilIterator<[T, number]> {
         const previous = this.generator.bind(this);
@@ -465,7 +531,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [1, 4, 7]
-     * range(1, 10).step(3).collect();
+     * range(1, 10)
+     *   .step(3)
+     *   .collect();
      */
     step(step: number) {
         if (step <= 0) throw new AzilError("Invalid step");
@@ -491,12 +559,14 @@ class AzilIterator<T> {
      *
      * @example
      * // [[0, 6, "foo"], [1, 7, "bar"]]
-     * iter([0, 1]).zip([6, 7], ["foo", "bar"]).collect();
+     * iter([0, 1])
+     *   .zip([6, 7], ["foo", "bar"])
+     *   .collect();
      */
     zip<I extends Iterable<any>[]>(
         ...iterables: I
     ): AzilIterator<[T, ...MapToIterType<I>]> {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -522,7 +592,8 @@ class AzilIterator<T> {
      *
      * @example
      * // [[0, 1, 2], [3, 4, 5]]
-     * iter([[0, 3], [1, 4], [2, 5]]).unzip();
+     * iter([[0, 3], [1, 4], [2, 5]])
+     *   .unzip();
      */
     unzip(): Unzip<T> {
         let outLists: any = [];
@@ -558,7 +629,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [1, -1, 2, -2]
-     * iter([1, 2]).flatMap((n) => [n, -n]).collect();
+     * iter([1, 2])
+     *   .flatMap((n) => [n, -n])
+     *   .collect();
      */
     flatMap<F extends (val: T, index: number) => any>(func: F) {
         return this.map(func).flatten(1);
@@ -570,8 +643,9 @@ class AzilIterator<T> {
      * - the second array contains all elements for which the predicate is `false`
      *
      * @example
-     * const arr = [1, 2, 3, 4];
-     * const [even, odd] = iter(arr).partition((n) => n % 2 === 0);
+     * // [[2, 4], [1, 3]]
+     * iter([1, 2, 3, 4])
+     *   .partition((n) => n % 2 === 0);
      */
     partition(pred: (val: T, index: number) => boolean) {
         const left = [];
@@ -673,7 +747,9 @@ class AzilIterator<T> {
      * Partially consumes the iterator and returns the first element for which the predicate is true. Returns `undefined` if none was found.
      *
      * @example
-     * iter([7, 11, 3, 6, 5]).find(n => n % 2 === 0); // 6
+     * // 6
+     * iter([7, 11, 3, 6, 5])
+     *   .find(n => n % 2 === 0);
      */
     find(pred: (val: T, index: number) => boolean) {
         let index = 0;
@@ -690,7 +766,9 @@ class AzilIterator<T> {
      * Partially consumes the iterator and returns the index of the first element for which the predicate is true. Returns `undefined` if none was found.
      *
      * @example
-     * iter([7, 11, 3, 6, 5]).position(n => n % 2 === 0); // 3
+     * // 3
+     * iter([7, 11, 3, 6, 5])
+     *   .position(n => n % 2 === 0);
      */
     position(pred: (val: T, index: number) => boolean) {
         let index = 0;
@@ -706,9 +784,12 @@ class AzilIterator<T> {
 
     /**
      * Creates an iterator that extends the current iterator with the values of each passed iterable in sequence.
+     *
      * @example
      * // [0, 'foo', 'bar']
-     * iter([0]).chain(['foo'], ['bar']).collect();
+     * iter([0])
+     *   .chain(['foo'], ['bar'])
+     *   .collect();
      */
     chain<I extends Iterable<any>[]>(
         ...iterables: I
@@ -731,14 +812,19 @@ class AzilIterator<T> {
     }
 
     /**
-     * Creates an iterator that repeats the current iterator `count` times. Defaults to `Infinity`.
+     * Creates an iterator that repeats the current iterator `count` times. `count` defaults to `Infinity`.
      *
      * @example
      * // [1, 2, 3, 1, 2, 3]
-     * range(1, 4).cycle(2).collect();
+     * range(1, 4)
+     *   .cycle(2)
+     *   .collect();
      *
      * // [1, 2, 3, 1, 2, 3, 1, 2]
-     * range(1, 4).cycle().take(8).collect();
+     * range(1, 4)
+     *   .cycle()
+     *   .take(8)
+     *   .collect();
      */
     cycle(count: number = Infinity) {
         if (count < 0) throw new AzilError("Invalid count parameter");
@@ -769,7 +855,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [1, 1, 2, 2, 3, 3]
-     * range(1, 4).stretch(2).collect();
+     * iter([1, 2, 3])
+     *   .stretch(2)
+     *   .collect();
      */
     stretch(count: number) {
         if (count < 0) throw new AzilError("Invalid stretch parameter");
@@ -793,12 +881,13 @@ class AzilIterator<T> {
      * Consumes the iterator, invoking the provided function for each element.
      *
      * @example
-     * range(0, 3).forEach((n, i) => console.log(n));
+     * range(0, 3)
+     *   .forEach((n, i) => console.log(n));
      */
     forEach(func: (val: T, index: number) => unknown) {
         let index = 0;
 
-        for (const element of this.generator()) {
+        for (const element of this) {
             func(element, index);
             index += 1;
         }
@@ -855,7 +944,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [0, 1, 2, 3, 4]
-     * iter([0, 1, 1, 2, 3, 2, 4]).unique().collect();
+     * iter([0, 1, 1, 2, 3, 2, 4])
+     *   .unique()
+     *   .collect();
      */
     unique() {
         return this.uniqueBy((elem) => elem);
@@ -866,7 +957,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [0, 1, 2, 3, 4]
-     * iter([0, 1, 1, 2, 3, 2, 4]).uniqueBy(n => n).collect();
+     * iter([0, 1, 1, 2, 3, 2, 4])
+     *   .uniqueBy(n => n)
+     *   .collect();
      */
     uniqueBy(getKey: (element: T) => unknown) {
         const previous = this.generator.bind(this);
@@ -886,7 +979,17 @@ class AzilIterator<T> {
     }
 
     /**
-     * Sets a callback to be invoked on each element before yielding.
+     * Creates an iterator that invokes a callback on each element before yielding.
+     *
+     * @example
+     * // [1, 10, 2, 20, 3, 30]
+     * const out: number[] = [];
+     *
+     * range(1, 4)
+     *   .inspect((n) => out.push(n))
+     *   .map((n) => n * 10)
+     *   .inspect((n) => out.push(n))
+     *   .consume();
      */
     inspect(func: (element: T) => unknown) {
         const previous = this.generator.bind(this);
@@ -902,10 +1005,13 @@ class AzilIterator<T> {
     }
 
     /**
-     * Creates an iterator which only yields elements from `start` to `end` (excluded).
+     * Creates an iterator which only yields elements from `start` to `end` (excluded). It is equivalent to `.skip(start).take(end - start)`.
      *
      * @example
-     * iter([0, 1, 1, 2, 3]).slice(2, 4).collect(); // [1, 2]
+     * // [1, 2]
+     * iter([0, 1, 1, 2, 3])
+     *   .slice(2, 4)
+     *   .collect();
      */
     slice(start: number, end: number = Infinity) {
         if (start < 0 || end < 0 || start > end) {
@@ -922,7 +1028,9 @@ class AzilIterator<T> {
      *
      * @example
      * // [[0, 'a'], [0, 'b'], [1, 'a'], [1, 'b']]
-     * range(2).nest(['a', 'b']).collect();
+     * range(2)
+     *   .nest(['a', 'b'])
+     *   .collect();
      */
     nest<U>(iterable: Iterable<U>): AzilIterator<[T, U]> {
         const previous = this.generator.bind(this);
@@ -944,12 +1052,14 @@ class AzilIterator<T> {
      *
      * @example
      * // [[0, 0], [0, 1], [1, 0], [1, 1]]
-     * range(2).nestRange(2).collect();
-     * range(2).nestRange(0, 2).collect();
+     * range(2)
+     *   .nestRange(2)
+     *   .collect();
      *
      * // [[0, 0], [0, -1], [1, 0], [1, -1]]
-     * range(2).nestRange(0, -2).collect();
-     * range(2).nestRange(-2).collect();
+     * range(2)
+     *   .nestRange(0, -2)
+     *   .collect();
      */
     nestRange(start: number, end: number): AzilIterator<[T, number]>;
     nestRange(end: number): AzilIterator<[T, number]>;

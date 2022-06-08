@@ -589,7 +589,7 @@ describe("inspect", () => {
             .inspect((n) => out.push(n))
             .map((n) => n * 10)
             .inspect((n) => out.push(n))
-            .collect();
+            .consume();
 
         expect(out).toMatchObject([0, 0, 1, 10, 2, 20, 3, 30, 4, 40]);
     });
