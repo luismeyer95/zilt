@@ -1,4 +1,5 @@
 import * as azil from "./lib";
+import { range, once, chain, iter } from "./lib";
 
 function draw(mat: number[][]) {
     const down = [1, 0];
@@ -39,9 +40,6 @@ function printMatrix(matrix: number[][]) {
 // const matrix = draw(createMatrix(17, 199));
 // printMatrix(matrix);
 
-const res = azil
-    .range()
-    .accumulate((acc, n) => acc + n)
-    .take(7)
-    .collect();
+const res = iter([10, 15, 15, 20]).count((n) => n === 15); // 6
+// '0123'
 console.log(res);

@@ -11,7 +11,7 @@ export function iter<T>(input: Iterable<T>): AzilIterator<T> {
 }
 
 /**
- * Creates an iterator yielding a single value.
+ * Creates an iterator over a single value.
  * @example
  * once(['hello']).collect() // [['hello']]
  */
@@ -24,9 +24,9 @@ export function once<T>(value: T): AzilIterator<T> {
 }
 
 /**
- * Creates an iterator yielding a single value.
+ * Creates an iterator that yields the values of each passed iterable in sequence.
  * @example
- * once(['hello']).collect() // [['hello']]
+ * chain([0, 1], ['foo']).collect(); // [0, 1, 'foo']
  */
 export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
     return new AzilIterator(
@@ -41,9 +41,13 @@ export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
 }
 
 /**
- * Creates a Lazi iterator over a specified range of numbers and step.
- * @param start the start of the range
- * @param end the end of the range (excluded)
+ * Creates an iterator over a range of numbers (end excluded).
+ * @example
+ * range().collect()        // [0, 1, ...] (infinite)
+ * range(1, 4).collect()    // [1, 2, 3]
+ * range(3, 0).collect()    // [3, 2, 1]
+ * range(4).collect()       // [0, 1, 2, 3]
+ * range(-4).collect()      // [0, -1, -2, -3]
  */
 export function range(start: number, end: number): AzilIterator<number>;
 export function range(end: number): AzilIterator<number>;
@@ -66,10 +70,7 @@ export function range(...args: number[]) {
     return iter(iterable);
 }
 
-/**
- * Lazi Iterator
- */
-export class AzilIterator<T> {
+class AzilIterator<T> {
     private generator: () => Generator<T>;
 
     constructor(iterable: Iterable<T>) {
@@ -86,10 +87,20 @@ export class AzilIterator<T> {
         }
     }
 
+    /**
+     * Consumes the iterator to collect its values in an array and returns it.
+     * @example
+     * range(0, 3).collect() // [0, 1, 2]
+     */
     collect() {
         return [...this];
     }
 
+    /**
+     * Creates an iterator that transforms each value in the original iterator using the passed function parameter.
+     * @example
+     * range(0, 4).map((n) => n * 2).collect() // [0, 2, 4, 6]
+     */
     map<F extends (val: T, index: number) => any>(
         func: F
     ): AzilIterator<ReturnType<F>> {
@@ -107,6 +118,12 @@ export class AzilIterator<T> {
         );
     }
 
+    /**
+     * Creates an iterator which uses a callback to determine if an element should be yielded.
+     * @example
+     * range(0, 4).filter((n) => n % 2 === 1).collect();
+     * // => [1, 3]
+     */
     filter(func: (val: T, index: number) => boolean) {
         const previous = this.generator.bind(this);
 
@@ -124,6 +141,12 @@ export class AzilIterator<T> {
         );
     }
 
+    /**
+     * Creates an iterator which skips the first `num` values.
+     * @example
+     * range(0, 6).skip(3).collect();
+     * // => [3, 4, 5]
+     */
     skip(num: number) {
         if (num < 0) throw new AzilError("Invalid skip parameter");
 
@@ -142,6 +165,12 @@ export class AzilIterator<T> {
         );
     }
 
+    /**
+     * Creates an iterator which skips values while a predicate is true.
+     * @example
+     * range(0, 6).skipWhile((n) => n < 3).collect();
+     * // => [3, 4, 5]
+     */
     skipWhile(pred: (val: T, index: number) => boolean): AzilIterator<T> {
         const previous = this.generator.bind(this);
 
@@ -164,6 +193,12 @@ export class AzilIterator<T> {
         );
     }
 
+    /**
+     * Creates an iterator which only keeps the first `num` values.
+     * @example
+     * range(0, 6).take(3).collect();
+     * // => [0, 1, 2]
+     */
     take(num: number) {
         if (num < 0) throw new AzilError("Invalid take parameter");
 
@@ -180,6 +215,12 @@ export class AzilIterator<T> {
         );
     }
 
+    /**
+     * Creates an iterator which yields values until a predicate is false.
+     * @example
+     * range(0, 6).takeWhile((n) => n < 3).collect();
+     * // => [0, 1, 2]
+     */
     takeWhile(pred: (val: T, index: number) => boolean) {
         const previous = this.generator.bind(this);
 
@@ -198,6 +239,13 @@ export class AzilIterator<T> {
         return this;
     }
 
+    /**
+     * Consumes the iterator to produce a single value using a given function.
+     * @example
+     * range(0, 4).reduce((acc, n) => acc + n); // 6
+     * range(0, 4).reduce((acc, n) => acc + n, 1); // 7
+     * range(0, 4).reduce((acc, n) => acc + n.toString(), ''); // '0123'
+     */
     reduce(func: (acc: T, element: T) => T): T;
     reduce(func: (acc: T, element: T) => T, initializer: T): T;
     reduce<U>(func: (acc: U, element: T) => U, initializer: U): U;
@@ -207,7 +255,7 @@ export class AzilIterator<T> {
         // Empty iterator without initializer, return early
         let first = iter.next();
         if (initializer === null && first.done) {
-            throw new TypeError(
+            throw new AzilError(
                 "Reduce of empty iterator with no initial value"
             );
         }
@@ -222,6 +270,19 @@ export class AzilIterator<T> {
         return acc;
     }
 
+    /**
+     * Creates an iterator which updates an accumulator using a function argument (similar to reduce, but yielding the accumulator at every step).
+     * @example
+     * // [0, 1, 3, 6, 10]
+     * range(0, 5)
+     *   .accumulate((acc, n) => acc + n)
+     *   .collect();
+     *
+     * // [2, 3, 5, 8]
+     * range(0, 4)
+     *   .accumulate((acc, n) => acc + n, 2)
+     *   .collect();
+     */
     accumulate(f: (acc: T, element: T) => T): AzilIterator<T>;
     accumulate(f: (acc: T, element: T) => T, initializer: T): AzilIterator<T>;
     accumulate<U>(
@@ -256,10 +317,23 @@ export class AzilIterator<T> {
         );
     }
 
+    /**
+     * Consumes the iterator and returns the number of elements that match a predicate.
+     * @example
+     * const arr = [10, 15, 15, 20];
+     * iter(arr).count(); // 4
+     * iter(arr).count((n) => n === 15); // 2
+     */
     count(pred: (val: T) => boolean = () => true) {
         return this.reduce((acc, val) => (pred(val) ? acc + 1 : acc), 0);
     }
 
+    /**
+     * Consumes the iterator and returns the percentage of elements that match a predicate.
+     * @example
+     * const arr = [10, 15, 15, 20];
+     * iter(arr).rate((n) => n === 15); // 0.5
+     */
     rate(pred: (val: T) => boolean) {
         let total = 0;
 
