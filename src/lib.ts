@@ -2,7 +2,7 @@ import { MapToIterType, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
 import AzilError from "./azil.error";
 
 /**
- * Creates a Lazi iterator from a regular iterable or a single value.
+ * Creates an iterator from a regular iterable or a single value.
  */
 export function iter<T>(input: Iterable<T>): AzilIterator<T> {
     return new AzilIterator(input);
