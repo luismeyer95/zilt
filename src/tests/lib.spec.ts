@@ -36,10 +36,22 @@ describe("range", () => {
     it("should iterate over the range 0..-6", () => {
         let expected = 0;
 
-        for (const item of range(0, -6, -1)) {
+        for (const item of range(0, -6)) {
             expect(item).toBe(expected);
             expected -= 1;
         }
+    });
+
+    it("should iterate indefinitely", () => {
+        expect(range().take(1000).count()).toBe(1000);
+    });
+
+    it("should iterate forward", () => {
+        expect(range(3).collect()).toMatchObject([0, 1, 2]);
+    });
+
+    it("should iterate backward", () => {
+        expect(range(-3).collect()).toMatchObject([0, -1, -2]);
     });
 });
 
@@ -207,6 +219,12 @@ describe("count", () => {
     });
 });
 
+describe("rate", () => {
+    it("should return the percentage of values satisfying the predicate", () => {
+        expect(range(4, 9).rate((n) => n % 2 === 0)).toBe(3 / 5);
+    });
+});
+
 describe("flatten", () => {
     it("should flatten array of arrays", () => {
         const result = iter([
@@ -234,13 +252,6 @@ describe("flatten", () => {
     });
 
     it("should no-op on 0 depth", () => {
-        const arr = [0, [1], [[2]]];
-        const result = iter(arr).flatten(0).collect();
-
-        expect(result).toMatchObject([0, [1], [[2]]]);
-    });
-
-    it("should no", () => {
         const arr = [0, [1], [[2]]];
         const result = iter(arr).flatten(0).collect();
 
@@ -306,21 +317,21 @@ describe("enumerate", () => {
     });
 });
 
-describe("step by", () => {
+describe("step", () => {
     it("should step by 3", () => {
-        const result = iter([1, 2, 3, 4, 5, 6, 7, 8, 9]).stepBy(3).collect();
+        const result = iter([1, 2, 3, 4, 5, 6, 7, 8, 9]).step(3).collect();
 
         expect(result).toMatchObject([1, 4, 7]);
     });
 
     it("should no-op on empty iterator", () => {
-        const result = iter([]).stepBy(3).collect();
+        const result = iter([]).step(3).collect();
 
         expect(result).toMatchObject([]);
     });
 
     it("should error on step <= 0", () => {
-        const stepper = (n: number) => () => iter([1]).stepBy(n);
+        const stepper = (n: number) => () => iter([1]).step(n);
 
         expect(stepper(0)).toThrowError();
         expect(stepper(-1)).toThrowError();
@@ -561,7 +572,7 @@ describe("max by key", () => {
     });
 });
 
-describe("unique", () => {
+describe("unique, uniqueBy", () => {
     it("should filter out duplicates", () => {
         const it = iter([0, 1, 1, 2, 3, 3, 2, 4, 1, 5]);
 
@@ -572,14 +583,14 @@ describe("unique", () => {
     });
 });
 
-describe("tap", () => {
+describe("inspect", () => {
     it("should invoke callback on yielded values", () => {
         const out: number[] = [];
 
         range(0, 5)
-            .tap((n) => out.push(n))
+            .inspect((n) => out.push(n))
             .map((n) => n * 10)
-            .tap((n) => out.push(n))
+            .inspect((n) => out.push(n))
             .collect();
 
         expect(out).toMatchObject([0, 0, 1, 10, 2, 20, 3, 30, 4, 40]);
@@ -602,12 +613,39 @@ describe("slice", () => {
     });
 });
 
+describe("nest, nestRange", () => {
+    it("should create a 2D iterator", () => {
+        const pairs = [];
+        const strs = ["hello", "world"];
+
+        for (let i = 0; i < 3; ++i) {
+            for (let j = 0; j < 2; ++j) {
+                pairs.push([i, strs[j]]);
+            }
+        }
+
+        expect(range(3).nest(strs).collect()).toMatchObject(pairs);
+    });
+
+    it("should create a 2D iterator", () => {
+        const pairs = [];
+
+        for (let i = 0; i < 3; ++i) {
+            for (let j = 0; j < 2; ++j) {
+                pairs.push([i, j]);
+            }
+        }
+
+        expect(range(3).nestRange(2).collect()).toMatchObject(pairs);
+    });
+});
+
 describe("chaos", () => {
     it("should work", () => {
         const it = range(0, 3)
             .chain(once(3), once(4), [5, 6, 7])
             .cycle()
-            .stepBy(3)
+            .step(3)
             .take(9);
 
         expect(it.collect()).toMatchObject([0, 3, 6, 1, 4, 7, 2, 5, 0]);

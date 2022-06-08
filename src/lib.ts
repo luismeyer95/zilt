@@ -3,11 +3,18 @@ import AzilError from "./azil.error";
 
 /**
  * Creates an iterator from a regular iterable or a single value.
+ * @example
+ * iter([0, 1, 2]).collect() // [0, 1, 2]
  */
 export function iter<T>(input: Iterable<T>): AzilIterator<T> {
     return new AzilIterator(input);
 }
 
+/**
+ * Creates an iterator yielding a single value.
+ * @example
+ * once(['hello']).collect() // [['hello']]
+ */
 export function once<T>(value: T): AzilIterator<T> {
     return new AzilIterator(
         (function* () {
@@ -16,6 +23,11 @@ export function once<T>(value: T): AzilIterator<T> {
     );
 }
 
+/**
+ * Creates an iterator yielding a single value.
+ * @example
+ * once(['hello']).collect() // [['hello']]
+ */
 export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
     return new AzilIterator(
         (function* () {
@@ -32,9 +44,19 @@ export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
  * Creates a Lazi iterator over a specified range of numbers and step.
  * @param start the start of the range
  * @param end the end of the range (excluded)
- * @param step the iteration step (defaults to 1)
  */
-export function range(start: number, end: number, step = 1) {
+export function range(start: number, end: number): AzilIterator<number>;
+export function range(end: number): AzilIterator<number>;
+export function range(): AzilIterator<number>;
+export function range(...args: number[]) {
+    let start = 0,
+        end = Infinity;
+
+    if (args.length === 2) [start, end] = args;
+    else if (args.length === 1) end = args[0];
+
+    const step = start < end ? 1 : -1;
+
     const iterable = (function* () {
         for (let i = start; i !== end; i += step) {
             yield i;
@@ -71,19 +93,7 @@ export class AzilIterator<T> {
     map<F extends (val: T, index: number) => any>(
         func: F
     ): AzilIterator<ReturnType<F>> {
-        const previous = this.generator.bind(this);
-
-        // const self = this as any;
-        // self.generator = function* () {
-        //     let index = 0;
-
-        //     for (const item of previous()) {
-        //         yield func(item, index);
-        //         index += 1;
-        //     }
-        // };
-
-        // return self;
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -264,7 +274,10 @@ export class AzilIterator<T> {
     flatten<N extends number>(
         maxDepth: N
     ): AzilIterator<RecursiveFlatten<N, T>> {
-        if (maxDepth < 0) throw new AzilError("Invalid depth for flatten");
+        if (maxDepth < 0 || maxDepth > 10)
+            throw new AzilError(
+                "Invalid depth for flatten, allowed range is [0, 10]"
+            );
 
         function* recurse<U>(depth: number, it: Iterable<U>): any {
             for (const item of it) {
@@ -344,7 +357,7 @@ export class AzilIterator<T> {
         );
     }
 
-    stepBy(step: number) {
+    step(step: number) {
         if (step <= 0) throw new AzilError("Invalid step");
 
         const previous = this.generator.bind(this);
@@ -631,7 +644,7 @@ export class AzilIterator<T> {
         );
     }
 
-    tap(func: (element: T) => unknown) {
+    inspect(func: (element: T) => unknown) {
         const previous = this.generator.bind(this);
 
         return iter(
@@ -650,5 +663,43 @@ export class AzilIterator<T> {
         }
 
         return this.skip(start).take(end - start);
+    }
+
+    // TODO: unit test
+    nest<U>(iterable: Iterable<U>): AzilIterator<[T, U]> {
+        const previous = this.generator.bind(this);
+        const nested = [...iterable];
+
+        return iter(
+            (function* () {
+                for (const i of previous()) {
+                    for (const j of nested) {
+                        yield [i, j];
+                    }
+                }
+            })()
+        );
+    }
+
+    nestRange(start: number, end: number): AzilIterator<[T, number]>;
+    nestRange(end: number): AzilIterator<[T, number]>;
+    nestRange(...args: number[]): AzilIterator<[T, number]> {
+        const previous = this.generator.bind(this);
+
+        let start = 0,
+            end = Infinity;
+
+        if (args.length === 2) [start, end] = args;
+        else if (args.length === 1) end = args[0];
+
+        return iter(
+            (function* () {
+                for (const i of previous()) {
+                    for (const j of range(start, end)) {
+                        yield [i, j];
+                    }
+                }
+            })()
+        );
     }
 }
