@@ -239,6 +239,13 @@ describe("flatten", () => {
 
         expect(result).toMatchObject([0, [1], [[2]]]);
     });
+
+    it("should no", () => {
+        const arr = [0, [1], [[2]]];
+        const result = iter(arr).flatten(0).collect();
+
+        expect(result).toMatchObject([0, [1], [[2]]]);
+    });
 });
 
 describe("chunks", () => {

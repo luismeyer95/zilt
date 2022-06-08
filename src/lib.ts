@@ -1,29 +1,23 @@
-import {
-    Flatten,
-    MapToIterType,
-    RecursiveFlatten,
-    TupleToUnion,
-    Unzip,
-} from "./utils";
-import LaziError from "./lazi.error";
+import { MapToIterType, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
+import AzilError from "./azil.error";
 
 /**
  * Creates a Lazi iterator from a regular iterable or a single value.
  */
-export function iter<T>(input: Iterable<T>): LaziIterator<T> {
-    return new LaziIterator(input);
+export function iter<T>(input: Iterable<T>): AzilIterator<T> {
+    return new AzilIterator(input);
 }
 
-export function once<T>(value: T): LaziIterator<T> {
-    return new LaziIterator(
+export function once<T>(value: T): AzilIterator<T> {
+    return new AzilIterator(
         (function* () {
             yield value;
         })()
     );
 }
 
-export function chain<T>(...iterables: Iterable<T>[]): LaziIterator<T> {
-    return new LaziIterator(
+export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
+    return new AzilIterator(
         (function* () {
             for (const it of iterables) {
                 for (const item of it) {
@@ -53,7 +47,7 @@ export function range(start: number, end: number, step = 1) {
 /**
  * Lazi Iterator
  */
-export class LaziIterator<T> {
+export class AzilIterator<T> {
     private generator: () => Generator<T>;
 
     constructor(iterable: Iterable<T>) {
@@ -76,8 +70,20 @@ export class LaziIterator<T> {
 
     map<F extends (val: T, index: number) => any>(
         func: F
-    ): LaziIterator<ReturnType<F>> {
+    ): AzilIterator<ReturnType<F>> {
         const previous = this.generator.bind(this);
+
+        // const self = this as any;
+        // self.generator = function* () {
+        //     let index = 0;
+
+        //     for (const item of previous()) {
+        //         yield func(item, index);
+        //         index += 1;
+        //     }
+        // };
+
+        // return self;
 
         return iter(
             (function* () {
@@ -109,7 +115,7 @@ export class LaziIterator<T> {
     }
 
     skip(num: number) {
-        if (num < 0) throw new LaziError("Invalid skip parameter");
+        if (num < 0) throw new AzilError("Invalid skip parameter");
 
         const previous = this.generator.bind(this);
 
@@ -126,7 +132,7 @@ export class LaziIterator<T> {
         );
     }
 
-    skipWhile(pred: (val: T, index: number) => boolean): LaziIterator<T> {
+    skipWhile(pred: (val: T, index: number) => boolean): AzilIterator<T> {
         const previous = this.generator.bind(this);
 
         return iter(
@@ -149,7 +155,7 @@ export class LaziIterator<T> {
     }
 
     take(num: number) {
-        if (num < 0) throw new LaziError("Invalid take parameter");
+        if (num < 0) throw new AzilError("Invalid take parameter");
 
         const previous = this.generator.bind(this);
 
@@ -206,12 +212,12 @@ export class LaziIterator<T> {
         return acc;
     }
 
-    accumulate(f: (acc: T, element: T) => T): LaziIterator<T>;
-    accumulate(f: (acc: T, element: T) => T, initializer: T): LaziIterator<T>;
+    accumulate(f: (acc: T, element: T) => T): AzilIterator<T>;
+    accumulate(f: (acc: T, element: T) => T, initializer: T): AzilIterator<T>;
     accumulate<U>(
         f: (acc: U, element: T) => U,
         initializer: U
-    ): LaziIterator<U>;
+    ): AzilIterator<U>;
     accumulate(func: any, initializer: any = null) {
         const previous = this[Symbol.iterator]();
 
@@ -257,8 +263,8 @@ export class LaziIterator<T> {
 
     flatten<N extends number>(
         maxDepth: N
-    ): LaziIterator<RecursiveFlatten<N, T>> {
-        if (maxDepth < 0) throw new LaziError("Invalid depth for flatten");
+    ): AzilIterator<RecursiveFlatten<N, T>> {
+        if (maxDepth < 0) throw new AzilError("Invalid depth for flatten");
 
         function* recurse<U>(depth: number, it: Iterable<U>): any {
             for (const item of it) {
@@ -297,7 +303,7 @@ export class LaziIterator<T> {
     }
 
     windows(windowLen: number) {
-        if (windowLen <= 0) throw new LaziError("Invalid window length");
+        if (windowLen <= 0) throw new AzilError("Invalid window length");
 
         const previous = this.generator.bind(this);
 
@@ -323,7 +329,7 @@ export class LaziIterator<T> {
         );
     }
 
-    enumerate(): LaziIterator<[T, number]> {
+    enumerate(): AzilIterator<[T, number]> {
         const previous = this.generator.bind(this);
 
         return iter(
@@ -339,7 +345,7 @@ export class LaziIterator<T> {
     }
 
     stepBy(step: number) {
-        if (step <= 0) throw new LaziError("Invalid step");
+        if (step <= 0) throw new AzilError("Invalid step");
 
         const previous = this.generator.bind(this);
 
@@ -359,7 +365,7 @@ export class LaziIterator<T> {
 
     zip<I extends Iterable<any>[]>(
         ...iterables: I
-    ): LaziIterator<[T, ...MapToIterType<I>]> {
+    ): AzilIterator<[T, ...MapToIterType<I>]> {
         const previous = this.generator.bind(this);
 
         return iter(
@@ -394,7 +400,7 @@ export class LaziIterator<T> {
 
         for (const item of this.generator()) {
             if (Array.isArray(item) === false) {
-                throw new LaziError("Element type is not an array");
+                throw new AzilError("Element type is not an array");
             }
 
             const list: any = item;
@@ -502,7 +508,7 @@ export class LaziIterator<T> {
 
     chain<I extends Iterable<any>[]>(
         ...iterables: I
-    ): LaziIterator<T | TupleToUnion<MapToIterType<I>>> {
+    ): AzilIterator<T | TupleToUnion<MapToIterType<I>>> {
         const previous = this.generator.bind(this);
 
         return iter(
@@ -522,7 +528,7 @@ export class LaziIterator<T> {
 
     cycle(count: number | null = null) {
         if (count !== null && count < 0)
-            throw new LaziError("Invalid count parameter");
+            throw new AzilError("Invalid count parameter");
 
         const previous = this.generator.bind(this);
         const buffered: T[] = [];
@@ -546,7 +552,7 @@ export class LaziIterator<T> {
     }
 
     stretch(count: number) {
-        if (count < 0) throw new LaziError("Invalid stretch parameter");
+        if (count < 0) throw new AzilError("Invalid stretch parameter");
 
         const previous = this.generator.bind(this);
 
@@ -640,7 +646,7 @@ export class LaziIterator<T> {
 
     slice(start: number, end: number = Infinity) {
         if (start < 0 || end < 0 || start > end) {
-            throw new LaziError("Invalid slice range");
+            throw new AzilError("Invalid slice range");
         }
 
         return this.skip(start).take(end - start);
