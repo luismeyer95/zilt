@@ -322,7 +322,7 @@ class AzilIterator<T> {
     }
 
     /**
-     * Creates an iterator which updates an accumulator using a function argument (similar to reduce, but yielding the accumulator at every step).
+     * Creates an iterator which updates and yields an accumulator using the provided function (similar to reduce, yields the accumulator at every step instead of returning the final accumulator value).
      *
      * @example
      * // [0, 1, 3, 6, 10]

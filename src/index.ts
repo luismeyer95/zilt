@@ -28,7 +28,7 @@ function printMatrix(matrix: number[][]) {
     const width = matrix[0].length,
         height = matrix.length;
 
-    for (const [y, x] of azil.range(height).nestRange(width)) {
+    for (const [y, x] of range(height).nestRange(width)) {
         const cell = matrix[y][x];
         process.stdout.write(cell === 1 ? "x" : " ");
         if (x === width - 1) {
@@ -37,12 +37,5 @@ function printMatrix(matrix: number[][]) {
     }
 }
 
-// const matrix = draw(createMatrix(17, 199));
-// printMatrix(matrix);
-const out: number[] = [];
-const res = range(1, 4)
-    .inspect((n) => out.push(n))
-    .map((n) => n * 10)
-    .inspect((n) => out.push(n))
-    .consume();
-console.log(out);
+const matrix = draw(createMatrix(17, 199));
+printMatrix(matrix);
