@@ -948,8 +948,8 @@ class AzilIterator<T> {
      * range(2).nestRange(0, 2).collect();
      *
      * // [[0, 0], [0, -1], [1, 0], [1, -1]]
-     * range(2).nestRange(-2).collect();
      * range(2).nestRange(0, -2).collect();
+     * range(2).nestRange(-2).collect();
      */
     nestRange(start: number, end: number): AzilIterator<[T, number]>;
     nestRange(end: number): AzilIterator<[T, number]>;
