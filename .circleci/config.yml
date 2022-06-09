@@ -16,6 +16,6 @@ jobs:
                   environment:
                       JEST_JUNIT_OUTPUT: ./junit/test-results.xml
             - store_test_results:
-                  path: junit
+                  path: ./junit
             - store_artifacts:
-                  path: coverage
+                  path: ./coverage
