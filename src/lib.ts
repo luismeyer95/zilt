@@ -112,6 +112,7 @@ class AzilIterator<T> {
      * Consumes the iterator.
      *
      * @example
+     * // void
      * range(0, 3)
      *   .consume();
      */
@@ -322,7 +323,7 @@ class AzilIterator<T> {
     }
 
     /**
-     * Creates an iterator which updates and yields an accumulator using the provided function (similar to reduce, yields the accumulator at every step instead of returning the final accumulator value).
+     * Creates an iterator which updates and yields an accumulator using the provided function (similar to reduce, but yields the accumulator at every step instead of returning the final accumulator value).
      *
      * @example
      * // [0, 1, 3, 6, 10]
@@ -467,7 +468,7 @@ class AzilIterator<T> {
     }
 
     /**
-     * Creates an iterator which yields every `k`-element window.
+     * Creates an iterator which yields every consecutive `k`-element window.
      *
      * @example
      * // [[0, 1], [1, 2], [2, 3], [3, 4]]
@@ -527,7 +528,7 @@ class AzilIterator<T> {
     }
 
     /**
-     * Creates an iterator that yields values by steps of `step`.
+     * Creates an iterator that yields values by steps of `step` starting from the first element.
      *
      * @example
      * // [1, 4, 7]
@@ -1051,9 +1052,9 @@ class AzilIterator<T> {
      * Creates an iterator which repeats the provided range for each element in the current iterator. Elements are yielded as pairs.
      *
      * @example
-     * // [[0, 0], [0, 1], [1, 0], [1, 1]]
+     * // [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]]
      * range(2)
-     *   .nestRange(2)
+     *   .nestRange(3)
      *   .collect();
      *
      * // [[0, 0], [0, -1], [1, 0], [1, -1]]
