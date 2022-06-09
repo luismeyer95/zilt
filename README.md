@@ -29,7 +29,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="https://i.imgur.com/MeyG0PW.png" alt="Logo" width="120" height="120">
+    <img src="https://i.imgur.com/Lqum6f8.png" alt="Logo" width="300" height="300">
   </a>
 
   <!-- <h1 align="center"><b>azil</b></h1> -->
