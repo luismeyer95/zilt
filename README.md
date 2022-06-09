@@ -150,8 +150,6 @@ npm install azil
 
 ## Builders
 
-<br/>
-
 ### `iter()`
 
 Creates an iterator from an iterable.
@@ -190,8 +188,6 @@ range(3, 0).collect(); // [3, 2, 1]
 range(4).collect(); // [0, 1, 2, 3]
 range(-4).collect(); // [0, -1, -2, -3]
 ```
-
-<br/>
 
 ## **Consumer methods**
 
@@ -359,8 +355,6 @@ Consumes the iterator.
 // void
 range(0, 3).consume();
 ```
-
-<br/>
 
 ## **Adapter methods**
 
