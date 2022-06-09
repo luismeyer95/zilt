@@ -4,6 +4,7 @@ orbs:
 
 jobs:
     build:
+        resource_class: small
         executor: node/default # use the default executor defined within the orb
         steps:
             - checkout
