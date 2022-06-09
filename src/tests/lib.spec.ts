@@ -708,7 +708,7 @@ describe("chaos", () => {
 
         const result = () =>
             iter([...text])
-                .stretch(2)
+                .stretch(3)
                 .chunks(8)
                 .map((line) => iter(line).rate((ch) => ch === " "))
                 .collect();
