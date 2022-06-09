@@ -195,8 +195,6 @@ range(-4).collect(); // [0, -1, -2, -3]
 
 ## **Consumer methods**
 
-<br/>
-
 ### `.collect()`
 
 Consumes the iterator to collect its values in an array and returns it.
@@ -365,8 +363,6 @@ range(0, 3).consume();
 <br/>
 
 ## **Adapter methods**
-
-<br/>
 
 ### `.enumerate()`
 
