@@ -150,8 +150,6 @@ npm install azil
 
 ## Builders
 
----
-
 <br/>
 
 ### `iter()`
@@ -196,8 +194,6 @@ range(-4).collect(); // [0, -1, -2, -3]
 <br/>
 
 ## **Consumer methods**
-
----
 
 <br/>
 
@@ -369,8 +365,6 @@ range(0, 3).consume();
 <br/>
 
 ## **Adapter methods**
-
----
 
 <br/>
 
