@@ -15,11 +15,15 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+<div align="center">
 
-[![luismeyer95](https://circleci.com/gh/luismeyer95/azil.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/azil)
-[![luismeyer95](https://img.shields.io/github/downloads/luismeyer95/azil/total?style=flat-square)](about:blank)
-[![luismeyer95](https://img.shields.io/github/last-commit/luismeyer95/azil?style=flat-square)](about:blank)
-[![luismeyer95](https://img.shields.io/github/stars/luismeyer95/azil?style=flat-square)](about:blank)
+<a href="">[![Build](https://circleci.com/gh/luismeyer95/azil.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/azil)</a>
+<a href="">[![Downloads](https://img.shields.io/github/downloads/luismeyer95/azil/total?style=flat-square)](about:blank)</a>
+<a href="">[![LastCommit](https://img.shields.io/github/last-commit/luismeyer95/azil?style=flat-square)](about:blank)</a>
+<a href="">[![Stars](https://img.shields.io/github/stars/luismeyer95/azil?style=flat-square)](about:blank)</a>
+<a href="">[![HitCount](http://hits.dwyl.com/luismeyer95/azil.svg)](http://hits.dwyl.com/luismeyer95/azil)</a>
+
+</div>
 
 <!-- PROJECT LOGO -->
 <br />
