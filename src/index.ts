@@ -37,5 +37,5 @@ function printMatrix(matrix: number[][]) {
     }
 }
 
-const matrix = draw(createMatrix(17, 199));
+const matrix = draw(createMatrix(17, 180));
 printMatrix(matrix);
