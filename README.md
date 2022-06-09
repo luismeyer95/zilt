@@ -16,7 +16,10 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![luismeyer95](https://circleci.com/gh/luismeyer95/azil.svg?style=shield&circle-token=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)](https://app.circleci.com/pipelines/github/luismeyer95/azil)
+[![luismeyer95](https://circleci.com/gh/luismeyer95/azil.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/azil)
+[![luismeyer95](https://img.shields.io/github/downloads/luismeyer95/azil/total?style=flat-square)](about:blank)
+[![luismeyer95](https://img.shields.io/github/last-commit/luismeyer95/azil?style=flat-square)](about:blank)
+[![luismeyer95](https://img.shields.io/github/stars/luismeyer95/azil?style=flat-square)](about:blank)
 
 <!-- PROJECT LOGO -->
 <br />
