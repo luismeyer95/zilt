@@ -144,8 +144,6 @@ Install the library in your local repository using your favourite package manage
 npm install azil
 ```
 
-<br/>
-
 # **Usage**
 
 ## Builders
