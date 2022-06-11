@@ -1,5 +1,5 @@
-import * as azil from "./lib";
-import { range, once, chain, iter } from "./lib";
+import * as azil from "./azil";
+import { range, once, chain, iter } from "./azil";
 
 // function draw(mat: number[][]) {
 //     const down = [1, 0];
