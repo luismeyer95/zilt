@@ -1,4 +1,4 @@
-import { range, iter, once, chain } from "../lib";
+import { range, iter, once, chain } from "../azil";
 
 describe("iter", () => {
     it("should create an array iterator", () => {

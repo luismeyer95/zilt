@@ -157,7 +157,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     filter(func: (val: T, index: number) => boolean) {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -185,7 +185,7 @@ class AzilIterator<T> {
     skip(num: number) {
         if (num < 0) throw new AzilError("Invalid skip parameter");
 
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -210,7 +210,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     skipWhile(pred: (val: T, index: number) => boolean): AzilIterator<T> {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -243,7 +243,7 @@ class AzilIterator<T> {
     take(num: number) {
         if (num < 0) throw new AzilError("Invalid take parameter");
 
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -266,7 +266,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     takeWhile(pred: (val: T, index: number) => boolean) {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         this.generator = function* () {
             let iter = previous();
