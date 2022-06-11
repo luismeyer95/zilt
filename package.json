@@ -5,7 +5,7 @@
     "main": "build/azil.umd.min.js",
     "types": "build/azil.d.ts",
     "files": [
-        "./build"
+        "build"
     ],
     "scripts": {
         "test": "jest --verbose --coverage",
