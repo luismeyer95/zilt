@@ -26,4 +26,4 @@ export type RecursiveFlatten<N extends number, T> = N extends 0
     ? RecursiveFlatten<Decr[N], Flatten<T>>
     : never;
 
-// type Test = RecursiveFlatten<2, [number, [number], [[number]]]>;
+export type NumberLiteral<T extends number> = number extends T ? never : T;

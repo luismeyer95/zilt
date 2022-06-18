@@ -257,6 +257,13 @@ describe("flatten", () => {
 
         expect(result).toMatchObject([0, [1], [[2]]]);
     });
+
+    // it("should not receive a non-literal argument", () => {
+    //     const arr = [0, [1], [[2]]];
+    //     const result = iter(arr).flatten(0 as number).collect();
+
+    //     expect(result).toMatchObject([0, [1], [[2]]]);
+    // });
 });
 
 describe("chunks", () => {

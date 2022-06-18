@@ -1,4 +1,10 @@
-import { MapToIterType, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
+import {
+    MapToIterType,
+    NumberLiteral,
+    RecursiveFlatten,
+    TupleToUnion,
+    Unzip,
+} from "./utils";
 import AzilError from "./azil.error";
 
 /**
@@ -415,7 +421,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     flatten<N extends number>(
-        maxDepth: N
+        maxDepth: NumberLiteral<N>
     ): AzilIterator<RecursiveFlatten<N, T>> {
         if (maxDepth < 0 || maxDepth > 10)
             throw new AzilError(
@@ -445,7 +451,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     chunks(k: number) {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -479,7 +485,7 @@ class AzilIterator<T> {
     windows(k: number) {
         if (k <= 0) throw new AzilError("Invalid window length");
 
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -513,7 +519,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     enumerate(): AzilIterator<[T, number]> {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -539,7 +545,7 @@ class AzilIterator<T> {
     step(step: number) {
         if (step <= 0) throw new AzilError("Invalid step");
 
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -795,7 +801,7 @@ class AzilIterator<T> {
     chain<I extends Iterable<any>[]>(
         ...iterables: I
     ): AzilIterator<T | TupleToUnion<MapToIterType<I>>> {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -830,7 +836,7 @@ class AzilIterator<T> {
     cycle(count: number = Infinity) {
         if (count < 0) throw new AzilError("Invalid count parameter");
 
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
         const buffered: T[] = [];
 
         return iter(
@@ -863,7 +869,7 @@ class AzilIterator<T> {
     stretch(count: number) {
         if (count < 0) throw new AzilError("Invalid stretch parameter");
 
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -963,7 +969,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     uniqueBy(getKey: (element: T) => unknown) {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -993,7 +999,7 @@ class AzilIterator<T> {
      *   .consume();
      */
     inspect(func: (element: T) => unknown) {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         return iter(
             (function* () {
@@ -1034,7 +1040,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     nest<U>(iterable: Iterable<U>): AzilIterator<[T, U]> {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
         const nested = [...iterable];
 
         return iter(
@@ -1065,7 +1071,7 @@ class AzilIterator<T> {
     nestRange(start: number, end: number): AzilIterator<[T, number]>;
     nestRange(end: number): AzilIterator<[T, number]>;
     nestRange(...args: number[]): AzilIterator<[T, number]> {
-        const previous = this.generator.bind(this);
+        const previous = this.generator;
 
         let start = 0,
             end = Infinity;
