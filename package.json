@@ -1,17 +1,17 @@
 {
-    "name": "azil",
+    "name": "zilt",
     "version": "1.0.0",
     "description": "A lazy iterator library in TypeScript.",
-    "main": "build/azil.umd.min.js",
-    "types": "build/azil.d.ts",
+    "main": "build/zilt.umd.min.js",
+    "types": "build/zilt.d.ts",
     "files": [
         "build"
     ],
     "scripts": {
-        "test": "jest --verbose --coverage",
+        "test": "jest --verbose",
         "lint": "eslint . --ext .ts",
         "build:js": "rollup -c rollup.config.js",
-        "build:minjs": "terser build/azil.umd.js --compress --mangle > build/azil.umd.min.js",
+        "build:minjs": "terser build/zilt.umd.js --compress --mangle > build/zilt.umd.min.js",
         "build": "npm run build:js -s && npm run build:minjs -s",
         "clean": "rm -rf junit node_modules coverage build"
     },

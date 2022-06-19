@@ -2,16 +2,16 @@
 import typescript from "rollup-plugin-typescript2";
 
 export default {
-    input: "./src/azil.ts",
+    input: "./src/zilt.ts",
     output: [
         {
-            file: "build/azil.esm.js",
+            file: "build/zilt.esm.js",
             format: "es",
         },
         {
-            file: "build/azil.umd.js",
+            file: "build/zilt.umd.js",
             format: "umd",
-            name: "azil",
+            name: "zilt",
         },
     ],
     plugins: [typescript(/*{ plugin options }*/)],

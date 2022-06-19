@@ -17,11 +17,11 @@
 -->
 <div align="center">
 
-<a href="">[![Build](https://circleci.com/gh/luismeyer95/azil.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/azil)</a>
-<a href="">[![Downloads](https://img.shields.io/github/downloads/luismeyer95/azil/total?style=flat-square)](about:blank)</a>
-<a href="">[![LastCommit](https://img.shields.io/github/last-commit/luismeyer95/azil?style=flat-square)](about:blank)</a>
-<a href="">[![Stars](https://img.shields.io/github/stars/luismeyer95/azil?style=flat-square)](about:blank)</a>
-<a href="">[![HitCount](http://hits.dwyl.com/luismeyer95/azil.svg)](http://hits.dwyl.com/luismeyer95/azil)</a>
+<a href="">[![Build](https://circleci.com/gh/luismeyer95/zilt.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/zilt)</a>
+<a href="">[![Downloads](https://img.shields.io/github/downloads/luismeyer95/zilt/total?style=flat-square)](about:blank)</a>
+<a href="">[![LastCommit](https://img.shields.io/github/last-commit/luismeyer95/zilt?style=flat-square)](about:blank)</a>
+<a href="">[![Stars](https://img.shields.io/github/stars/luismeyer95/zilt?style=flat-square)](about:blank)</a>
+<a href="">[![HitCount](http://hits.dwyl.com/luismeyer95/zilt.svg)](http://hits.dwyl.com/luismeyer95/zilt)</a>
 
 </div>
 
@@ -32,7 +32,7 @@
     <img src="https://i.imgur.com/Lqum6f8.png" alt="Logo" width="300" height="300">
   </a>
 
-  <!-- <h1 align="center"><b>azil</b></h1> -->
+  <!-- <h1 align="center"><b>zilt</b></h1> -->
 
   <p align="center">
     A lazy iterator library in TypeScript
@@ -141,7 +141,7 @@ TypeScript and JavaScript already have some awesome iterator libraries, however 
 Install the library in your local repository using your favourite package manager.
 
 ```sh
-npm install azil
+npm install zilt
 ```
 
 # **Usage**
@@ -606,7 +606,7 @@ range(1, 4)
 
 -   [ ] Async support
 
-See the [open issues](https://github.com/luismeyer95/azil/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/luismeyer95/zilt/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

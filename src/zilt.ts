@@ -5,7 +5,7 @@ import {
     TupleToUnion,
     Unzip,
 } from "./utils";
-import AzilError from "./azil.error";
+import ZiltError from "./zilt.error";
 
 /**
  * Creates an iterator from an iterable.
@@ -15,8 +15,8 @@ import AzilError from "./azil.error";
  * iter([0, 1, 2])
  *   .collect();
  */
-export function iter<T>(input: Iterable<T>): AzilIterator<T> {
-    return new AzilIterator(input);
+export function iter<T>(input: Iterable<T>): ZiltIterator<T> {
+    return new ZiltIterator(input);
 }
 
 /**
@@ -27,8 +27,8 @@ export function iter<T>(input: Iterable<T>): AzilIterator<T> {
  * once(['hello'])
  *   .collect();
  */
-export function once<T>(value: T): AzilIterator<T> {
-    return new AzilIterator(
+export function once<T>(value: T): ZiltIterator<T> {
+    return new ZiltIterator(
         (function* () {
             yield value;
         })()
@@ -43,8 +43,8 @@ export function once<T>(value: T): AzilIterator<T> {
  * chain([0, 1], ['foo'])
  *   .collect();
  */
-export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
-    return new AzilIterator(
+export function chain<T>(...iterables: Iterable<T>[]): ZiltIterator<T> {
+    return new ZiltIterator(
         (function* () {
             for (const it of iterables) {
                 for (const item of it) {
@@ -64,9 +64,9 @@ export function chain<T>(...iterables: Iterable<T>[]): AzilIterator<T> {
  * range(4).collect()       // [0, 1, 2, 3]
  * range(-4).collect()      // [0, -1, -2, -3]
  */
-export function range(start: number, end: number): AzilIterator<number>;
-export function range(end: number): AzilIterator<number>;
-export function range(): AzilIterator<number>;
+export function range(start: number, end: number): ZiltIterator<number>;
+export function range(end: number): ZiltIterator<number>;
+export function range(): ZiltIterator<number>;
 export function range(...args: number[]) {
     let start = 0,
         end = Infinity;
@@ -85,7 +85,7 @@ export function range(...args: number[]) {
     return iter(iterable);
 }
 
-class AzilIterator<T> {
+class ZiltIterator<T> {
     private generator: () => Generator<T>;
 
     constructor(iterable: Iterable<T>) {
@@ -138,7 +138,7 @@ class AzilIterator<T> {
      */
     map<F extends (val: T, index: number) => any>(
         func: F
-    ): AzilIterator<ReturnType<F>> {
+    ): ZiltIterator<ReturnType<F>> {
         const previous = this.generator;
 
         return iter(
@@ -189,7 +189,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     skip(num: number) {
-        if (num < 0) throw new AzilError("Invalid skip parameter");
+        if (num < 0) throw new ZiltError("Invalid skip parameter");
 
         const previous = this.generator;
 
@@ -215,7 +215,7 @@ class AzilIterator<T> {
      *   .skipWhile((n) => n < 3)
      *   .collect();
      */
-    skipWhile(pred: (val: T, index: number) => boolean): AzilIterator<T> {
+    skipWhile(pred: (val: T, index: number) => boolean): ZiltIterator<T> {
         const previous = this.generator;
 
         return iter(
@@ -247,7 +247,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     take(num: number) {
-        if (num < 0) throw new AzilError("Invalid take parameter");
+        if (num < 0) throw new ZiltError("Invalid take parameter");
 
         const previous = this.generator;
 
@@ -313,7 +313,7 @@ class AzilIterator<T> {
         // Empty iterator without initializer, return early
         let first = iter.next();
         if (initializer === null && first.done) {
-            throw new AzilError(
+            throw new ZiltError(
                 "Reduce of empty iterator with no initial value"
             );
         }
@@ -342,19 +342,19 @@ class AzilIterator<T> {
      *   .accumulate((acc, n) => acc + n, 2)
      *   .collect();
      */
-    accumulate(f: (acc: T, element: T) => T): AzilIterator<T>;
-    accumulate(f: (acc: T, element: T) => T, initializer: T): AzilIterator<T>;
+    accumulate(f: (acc: T, element: T) => T): ZiltIterator<T>;
+    accumulate(f: (acc: T, element: T) => T, initializer: T): ZiltIterator<T>;
     accumulate<U>(
         f: (acc: U, element: T) => U,
         initializer: U
-    ): AzilIterator<U>;
+    ): ZiltIterator<U>;
     accumulate(func: any, initializer: any = null) {
         const previous = this[Symbol.iterator]();
 
         // Empty iterator without initializer, return early
         let first = previous.next();
         if (initializer === null && first.done) {
-            throw new AzilError(
+            throw new ZiltError(
                 "Reduce of empty iterator with no initial value"
             );
         }
@@ -422,9 +422,9 @@ class AzilIterator<T> {
      */
     flatten<N extends number>(
         maxDepth: NumberLiteral<N>
-    ): AzilIterator<RecursiveFlatten<N, T>> {
+    ): ZiltIterator<RecursiveFlatten<N, T>> {
         if (maxDepth < 0 || maxDepth > 10)
-            throw new AzilError(
+            throw new ZiltError(
                 "Invalid depth for flatten, allowed range is [0, 10]"
             );
 
@@ -483,7 +483,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     windows(k: number) {
-        if (k <= 0) throw new AzilError("Invalid window length");
+        if (k <= 0) throw new ZiltError("Invalid window length");
 
         const previous = this.generator;
 
@@ -518,7 +518,7 @@ class AzilIterator<T> {
      *   .enumerate()
      *   .collect();
      */
-    enumerate(): AzilIterator<[T, number]> {
+    enumerate(): ZiltIterator<[T, number]> {
         const previous = this.generator;
 
         return iter(
@@ -543,7 +543,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     step(step: number) {
-        if (step <= 0) throw new AzilError("Invalid step");
+        if (step <= 0) throw new ZiltError("Invalid step");
 
         const previous = this.generator;
 
@@ -572,7 +572,7 @@ class AzilIterator<T> {
      */
     zip<I extends Iterable<any>[]>(
         ...iterables: I
-    ): AzilIterator<[T, ...MapToIterType<I>]> {
+    ): ZiltIterator<[T, ...MapToIterType<I>]> {
         const previous = this.generator;
 
         return iter(
@@ -615,7 +615,7 @@ class AzilIterator<T> {
 
         for (const item of this.generator()) {
             if (Array.isArray(item) === false) {
-                throw new AzilError("Element type is not an array");
+                throw new ZiltError("Element type is not an array");
             }
 
             const list: any = item;
@@ -800,7 +800,7 @@ class AzilIterator<T> {
      */
     chain<I extends Iterable<any>[]>(
         ...iterables: I
-    ): AzilIterator<T | TupleToUnion<MapToIterType<I>>> {
+    ): ZiltIterator<T | TupleToUnion<MapToIterType<I>>> {
         const previous = this.generator;
 
         return iter(
@@ -834,7 +834,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     cycle(count: number = Infinity) {
-        if (count < 0) throw new AzilError("Invalid count parameter");
+        if (count < 0) throw new ZiltError("Invalid count parameter");
 
         const previous = this.generator;
         const buffered: T[] = [];
@@ -867,7 +867,7 @@ class AzilIterator<T> {
      *   .collect();
      */
     stretch(count: number) {
-        if (count < 0) throw new AzilError("Invalid stretch parameter");
+        if (count < 0) throw new ZiltError("Invalid stretch parameter");
 
         const previous = this.generator;
 
@@ -1022,7 +1022,7 @@ class AzilIterator<T> {
      */
     slice(start: number, end: number = Infinity) {
         if (start < 0 || end < 0 || start > end) {
-            throw new AzilError("Invalid slice range");
+            throw new ZiltError("Invalid slice range");
         }
 
         return this.skip(start).take(end - start);
@@ -1039,7 +1039,7 @@ class AzilIterator<T> {
      *   .nest(['a', 'b'])
      *   .collect();
      */
-    nest<U>(iterable: Iterable<U>): AzilIterator<[T, U]> {
+    nest<U>(iterable: Iterable<U>): ZiltIterator<[T, U]> {
         const previous = this.generator;
         const nested = [...iterable];
 
@@ -1068,9 +1068,9 @@ class AzilIterator<T> {
      *   .nestRange(0, -2)
      *   .collect();
      */
-    nestRange(start: number, end: number): AzilIterator<[T, number]>;
-    nestRange(end: number): AzilIterator<[T, number]>;
-    nestRange(...args: number[]): AzilIterator<[T, number]> {
+    nestRange(start: number, end: number): ZiltIterator<[T, number]>;
+    nestRange(end: number): ZiltIterator<[T, number]>;
+    nestRange(...args: number[]): ZiltIterator<[T, number]> {
         const previous = this.generator;
 
         let start = 0,

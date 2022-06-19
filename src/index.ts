@@ -1,16 +1,16 @@
-import * as azil from "./azil";
-import { range, once, chain, iter } from "./azil";
+import * as zilt from "./zilt";
+import { range, once, chain, iter } from "./zilt";
 
 // function draw(mat: number[][]) {
 //     const down = [1, 0];
 //     const upRight = [-1, 1];
 
-//     const stepIt = azil
+//     const stepIt = zilt
 //         .iter([down, upRight])
 //         .stretch(mat.length - 1)
 //         .cycle();
 
-//     azil.chain(azil.once([0, 0]), stepIt)
+//     zilt.chain(zilt.once([0, 0]), stepIt)
 //         .accumulate(([y, x], [ys, xs]) => [y + ys, x + xs])
 //         .takeWhile(([_, x]) => x < mat[0].length)
 //         .forEach(([y, x]) => (mat[y][x] = 1));
