@@ -354,7 +354,7 @@ class AzilIterator<T> {
         // Empty iterator without initializer, return early
         let first = previous.next();
         if (initializer === null && first.done) {
-            throw new TypeError(
+            throw new AzilError(
                 "Reduce of empty iterator with no initial value"
             );
         }
