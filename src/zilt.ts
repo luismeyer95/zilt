@@ -7,6 +7,8 @@ import {
 } from "./utils";
 import ZiltError from "./zilt.error";
 
+export { ZiltError };
+
 /**
  * Creates an iterator from an iterable.
  *

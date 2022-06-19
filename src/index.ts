@@ -1,5 +1,5 @@
 import * as zilt from "./zilt";
-import { range, once, chain, iter } from "./zilt";
+import { range, once, chain, iter, ZiltError } from "./zilt";
 
 // function draw(mat: number[][]) {
 //     const down = [1, 0];
