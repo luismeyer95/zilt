@@ -7,8 +7,6 @@ import {
 } from "./utils";
 import ZiltError from "./zilt.error";
 
-export default { iter, once, chain, range, ZiltError };
-
 export { ZiltError };
 
 /**
