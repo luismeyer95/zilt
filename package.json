@@ -13,7 +13,7 @@
         "build:js": "rollup -c rollup.config.js",
         "build:minjs": "terser build/zilt.umd.js --compress --mangle > build/zilt.umd.min.js",
         "build": "npm run build:js -s && npm run build:minjs -s",
-        "clean": "rm -rf junit node_modules coverage build"
+        "clean": "rm -rf coverage build"
     },
     "keywords": [],
     "author": "",
