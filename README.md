@@ -146,6 +146,11 @@ npm install zilt
 
 # **Usage**
 
+```ts
+import * as zilt from "zilt";
+const zilt = require("zilt");
+```
+
 ## Builders
 
 ### `iter()`

@@ -1,6 +1,7 @@
 class ZiltError extends Error {
 }
 
+var zilt = { iter, once, chain, range, ZiltError };
 /**
  * Creates an iterator from an iterable.
  *
@@ -840,4 +841,4 @@ class ZiltIterator {
     }
 }
 
-export { chain, iter, once, range };
+export { ZiltError, chain, zilt as default, iter, once, range };

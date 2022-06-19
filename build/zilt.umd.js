@@ -7,6 +7,7 @@
     class ZiltError extends Error {
     }
 
+    var zilt = { iter, once, chain, range, ZiltError };
     /**
      * Creates an iterator from an iterable.
      *
@@ -846,7 +847,9 @@
         }
     }
 
+    exports.ZiltError = ZiltError;
     exports.chain = chain;
+    exports["default"] = zilt;
     exports.iter = iter;
     exports.once = once;
     exports.range = range;

@@ -7,11 +7,13 @@ export default {
         {
             file: "build/zilt.esm.js",
             format: "es",
+            exports: "named",
         },
         {
             file: "build/zilt.umd.js",
             format: "umd",
             name: "zilt",
+            exports: "named",
         },
     ],
     plugins: [typescript(/*{ plugin options }*/)],

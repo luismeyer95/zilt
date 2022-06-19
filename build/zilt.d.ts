@@ -1,4 +1,14 @@
 import { MapToIterType, NumberLiteral, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
+import ZiltError from "./zilt.error";
+declare const _default: {
+    iter: typeof iter;
+    once: typeof once;
+    chain: typeof chain;
+    range: typeof range;
+    ZiltError: typeof ZiltError;
+};
+export default _default;
+export { ZiltError };
 /**
  * Creates an iterator from an iterable.
  *
@@ -455,4 +465,3 @@ declare class ZiltIterator<T> {
     nestRange(start: number, end: number): ZiltIterator<[T, number]>;
     nestRange(end: number): ZiltIterator<[T, number]>;
 }
-export {};
