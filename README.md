@@ -123,9 +123,7 @@
 
 # **About The Project**
 
-I created this as a fun little project to learn about generators and wanted to be able to extend it as time goes by. This is also my first time publishing a library on npm, I will try my best to make it production-grade and maintain it over the years.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
+I created this as a fun little project to learn about generators and wanted to be able to extend it as time goes by. This is also my first time publishing a library on npm, I will try my best to make it production-grade and to maintain it over the years.
 
 # **Installation**
 
@@ -604,8 +602,6 @@ zilt.range(1, 4)
     .consume();
 ```
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 <!-- ROADMAP -->
 
 <!-- ## Roadmap
@@ -618,7 +614,7 @@ See the [open issues](https://github.com/luismeyer95/zilt/issues) for a full lis
 
 <!-- CONTRIBUTING -->
 
-## Contributing
+# **Contributing**
 
 Any contributions you make are **greatly appreciated**.
 
