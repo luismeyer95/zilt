@@ -31,20 +31,14 @@
   <a href="https://github.com/othneildrew/Best-README-Template">
     <img src="https://i.imgur.com/V9jWp3N.png" alt="Logo" width="300" height="300">
   </a>
-
-  <!-- <h1 align="center"><b>zilt</b></h1> -->
-
   <p align="center">
-    A lazy iterator library in TypeScript
+    <h2>A lazy iterator library in TypeScript.</h2>
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
+    <a href="https://github.com/luismeyer95/zilt">View Demo</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
+    <a href="https://github.com/luismeyer95/zilt/issues">Report Bug</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+    <a href="https://github.com/luismeyer95/zilt/issues">Request Feature</a>
   </p>
 </div>
 
@@ -56,7 +50,7 @@
       <a href="#about-the-project">About The Project</a>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#installation">Installation</a>
     </li>
     <li><a href="#usage">Usage</a>
         <ul>
@@ -127,19 +121,13 @@
   </ol>
 </details>
 
-<!-- ABOUT THE PROJECT -->
-
 # **About The Project**
 
-TypeScript and JavaScript already have some awesome iterator libraries, however I didn't find one that really suited my needs. I created this as a fun little project to learn about generators and wanted to be able to extend it as time goes by.
+I created this as a fun little project to learn about generators and wanted to be able to extend it as time goes by. This is also my first time publishing a library on npm, I will try my best to make it production-grade and maintain it over the years.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-<!-- GETTING STARTED -->
-
-# **Getting Started**
-
-Install the library in your local repository using your favourite package manager.
+# **Installation**
 
 ```sh
 npm install zilt
@@ -149,6 +137,7 @@ npm install zilt
 
 ```ts
 import * as zilt from "zilt";
+// or
 const zilt = require("zilt");
 ```
 
@@ -619,27 +608,21 @@ zilt.range(1, 4)
 
 <!-- ROADMAP -->
 
-## Roadmap
+<!-- ## Roadmap
 
 -   [ ] Async support
 
 See the [open issues](https://github.com/luismeyer95/zilt/issues) for a full list of proposed features (and known issues).
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<p align="right">(<a href="#top">back to top</a>)</p> -->
 
 <!-- CONTRIBUTING -->
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Any contributions you make are **greatly appreciated**.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 Don't forget to give the project a star! Thanks again!
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/<name>`)
-3. Commit your changes (`git commit -m 'Add <feature>'`)
-4. Push to the branch (`git push origin feature/<name>`)
-5. Open a pull request
 
 <p align="right">(<a href="#top">back to top</a>)</p>
