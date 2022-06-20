@@ -1,4 +1,4 @@
-import { range, iter, once, chain } from "../zilt";
+import { range, iter, once, chain, zip } from "../zilt";
 
 describe("iter", () => {
     it("should create an array iterator", () => {
@@ -20,6 +20,12 @@ describe("iter", () => {
         }
 
         expect(count).toBe(1);
+    });
+});
+
+describe("once", () => {
+    it("should create an iterator over a single value", () => {
+        expect(once(["hello"]).collect()).toMatchObject([["hello"]]);
     });
 });
 
@@ -52,6 +58,63 @@ describe("range", () => {
 
     it("should iterate backward", () => {
         expect(range(-3).collect()).toMatchObject([0, -1, -2]);
+    });
+});
+
+describe("chain", () => {
+    it("should chain two iterators", () => {
+        const it1 = iter([1, 2, 3]);
+        const it2 = iter([4, 5, 6]);
+
+        expect(chain(it1, it2).collect()).toMatchObject([1, 2, 3, 4, 5, 6]);
+    });
+
+    it("should chain multiple different type iterators", () => {
+        const it = chain(
+            [1, 2, 3],
+            ["apple", "orange"],
+            [{ age: 23 }, { age: 58 }]
+        );
+
+        expect(it.collect()).toMatchObject([
+            1,
+            2,
+            3,
+            "apple",
+            "orange",
+            { age: 23 },
+            { age: 58 },
+        ]);
+    });
+});
+
+describe("zip", () => {
+    it("should zip same len iterators", () => {
+        const result = zip([0, 1], [6, 7], ["foo", "bar"]).collect();
+
+        expect(result).toMatchObject([
+            [0, 6, "foo"],
+            [1, 7, "bar"],
+        ]);
+    });
+
+    it("should zip diff len iterators and stop when any iterator ends", () => {
+        const result = zip(
+            [0, 1],
+            [6, 7, 8, 9],
+            ["hola", "bonjour", "hello"]
+        ).collect();
+
+        expect(result).toMatchObject([
+            [0, 6, "hola"],
+            [1, 7, "bonjour"],
+        ]);
+    });
+
+    it("should not error on empty zip", () => {
+        const result = zip().collect();
+
+        expect(result).toMatchObject([]);
     });
 });
 

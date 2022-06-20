@@ -65,8 +65,9 @@
                 <ul>
                     <li><a href="#iter">iter()</a></li>
                     <li><a href="#once">once()</a></li>
-                    <li><a href="#chain">chain()</a></li>
                     <li><a href="#range">range()</a></li>
+                    <li><a href="#chain">chain()</a></li>
+                    <li><a href="#chain">zip()</a></li>
                 </ul>
             </li>
             <li>
@@ -159,7 +160,7 @@ Creates an iterator from an iterable.
 
 ```ts
 // [0, 1, 2]
-iter([0, 1, 2]).collect();
+zilt.iter([0, 1, 2]).collect();
 ```
 
 ### `once()`
@@ -168,7 +169,19 @@ Creates an iterator over a single value.
 
 ```ts
 // [['hello']]
-once(["hello"]).collect();
+zilt.once(["hello"]).collect();
+```
+
+### `range()`
+
+Creates an iterator over a range of numbers (end excluded).
+
+```ts
+zilt.range().collect(); // [0, 1, ...] (infinite)
+zilt.range(1, 4).collect(); // [1, 2, 3]
+zilt.range(3, 0).collect(); // [3, 2, 1]
+zilt.range(4).collect(); // [0, 1, 2, 3]
+zilt.range(-4).collect(); // [0, -1, -2, -3]
 ```
 
 ### `chain()`
@@ -177,19 +190,16 @@ Creates an iterator that yields the values of each passed iterable in sequence.
 
 ```ts
 // [0, 1, 'foo']
-chain([0, 1], ["foo"]).collect();
+zilt.chain([0, 1], ["foo"]).collect();
 ```
 
-### `range()`
+### `zip()`
 
-Creates an iterator over a range of numbers (end excluded).
+Creates an iterator over n-tuples from "merging" n iterators together.
 
 ```ts
-range().collect(); // [0, 1, ...] (infinite)
-range(1, 4).collect(); // [1, 2, 3]
-range(3, 0).collect(); // [3, 2, 1]
-range(4).collect(); // [0, 1, 2, 3]
-range(-4).collect(); // [0, -1, -2, -3]
+// [[0, 6, "foo"], [1, 7, "bar"]]
+zilt.zip([0, 1], [6, 7], ["foo", "bar"]).collect();
 ```
 
 ## **Consumer methods**
@@ -200,7 +210,7 @@ Consumes the iterator to collect its values in an array and returns it.
 
 ```ts
 // [0, 1, 2]
-range(0, 3).collect();
+zilt.range(0, 3).collect();
 ```
 
 ### `.forEach()`
@@ -209,7 +219,7 @@ Consumes the iterator, invoking the provided function for each element.
 
 ```ts
 // prints 0, 1, 2
-range(0, 3).forEach((n, i) => console.log(n));
+zilt.range(0, 3).forEach((n, i) => console.log(n));
 ```
 
 ### `.find()`
@@ -218,7 +228,7 @@ Partially consumes the iterator and returns the first element for which the pred
 
 ```ts
 // 6
-iter([7, 11, 3, 6, 5]).find((n) => n % 2 === 0);
+zilt.iter([7, 11, 3, 6, 5]).find((n) => n % 2 === 0);
 ```
 
 ### `.position()`
@@ -227,7 +237,7 @@ Partially consumes the iterator and returns the index of the first element for w
 
 ```ts
 // 3
-iter([7, 11, 3, 6, 5]).position((n) => n % 2 === 0);
+zilt.iter([7, 11, 3, 6, 5]).position((n) => n % 2 === 0);
 ```
 
 ### `.reduce()`
@@ -236,13 +246,13 @@ Consumes the iterator to produce a single value using a given function.
 
 ```ts
 // 6
-range(0, 4).reduce((acc, n) => acc + n);
+zilt.range(0, 4).reduce((acc, n) => acc + n);
 
 // 7
-range(0, 4).reduce((acc, n) => acc + n, 1);
+zilt.range(0, 4).reduce((acc, n) => acc + n, 1);
 
 // '0123'
-range(0, 4).reduce((acc, n) => acc + n.toString(), "");
+zilt.range(0, 4).reduce((acc, n) => acc + n.toString(), "");
 ```
 
 ### `.count()`
@@ -252,8 +262,8 @@ Consumes the iterator and returns the number of elements that match a predicate.
 ```ts
 // 3
 const arr = [10, 15, 15, 20];
-iter(arr).count(); // 4
-iter(arr).count((n) => n === 15); // 2
+zilt.iter(arr).count(); // 4
+zilt.iter(arr).count((n) => n === 15); // 2
 ```
 
 ### `.rate()`
@@ -262,7 +272,7 @@ Consumes the iterator and returns the percentage of elements that match a predic
 
 ```ts
 const arr = [10, 15, 15, 20];
-iter(arr).rate((n) => n === 15); // 0.5
+zilt.iter(arr).rate((n) => n === 15); // 0.5
 ```
 
 ### `.nth()`
@@ -270,7 +280,7 @@ iter(arr).rate((n) => n === 15); // 0.5
 Partially consumes the iterator and returns its nth element (0-indexed).
 
 ```ts
-iter([1, 2, 3]).nth(2); // 3
+zilt.iter([1, 2, 3]).nth(2); // 3
 ```
 
 ### `.first()`
@@ -278,7 +288,7 @@ iter([1, 2, 3]).nth(2); // 3
 Partially consumes the iterator and returns its first element.
 
 ```ts
-iter([1, 2, 3]).first(); // 1
+zilt.iter([1, 2, 3]).first(); // 1
 ```
 
 ### `.last()`
@@ -286,7 +296,7 @@ iter([1, 2, 3]).first(); // 1
 Consumes the iterator and returns its last element.
 
 ```ts
-iter([1, 2, 3]).last(); // 3
+zilt.iter([1, 2, 3]).last(); // 3
 ```
 
 ### `.min()`
@@ -294,8 +304,8 @@ iter([1, 2, 3]).last(); // 3
 Consumes the iterator and returns the element for which the `getKey` function result is the minimum.
 
 ```ts
-iter([3, 6, 4, 1, 8]).min((n) => n); // 1
-iter([3, 6, 4, 1, 8]).min((n) => -n); // 8
+zilt.iter([3, 6, 4, 1, 8]).min((n) => n); // 1
+zilt.iter([3, 6, 4, 1, 8]).min((n) => -n); // 8
 ```
 
 ### `.max()`
@@ -303,8 +313,8 @@ iter([3, 6, 4, 1, 8]).min((n) => -n); // 8
 Consumes the iterator and returns the element for which the `getKey` function result is the maximum.
 
 ```ts
-iter([3, 6, 4, 1, 8]).max((n) => n); // 8
-iter([3, 6, 4, 1, 8]).max((n) => -n); // 1
+zilt.iter([3, 6, 4, 1, 8]).max((n) => n); // 8
+zilt.iter([3, 6, 4, 1, 8]).max((n) => -n); // 1
 ```
 
 ### `.some()`
@@ -312,8 +322,8 @@ iter([3, 6, 4, 1, 8]).max((n) => -n); // 1
 Consumes the iterator and returns true if any element satisfies the predicate.
 
 ```ts
-iter([1, 1, 2]).some((n) => n === 2); // true
-iter([1, 1, 1]).some((n) => n === 2); // false
+zilt.iter([1, 1, 2]).some((n) => n === 2); // true
+zilt.iter([1, 1, 1]).some((n) => n === 2); // false
 ```
 
 ### `.every()`
@@ -321,8 +331,8 @@ iter([1, 1, 1]).some((n) => n === 2); // false
 Consumes the iterator and returns true if every element satisfies the predicate.
 
 ```ts
-iter([1, 2, 2]).every((n) => n === 2); // false
-iter([2, 2, 2]).every((n) => n === 2); // true
+zilt.iter([1, 2, 2]).every((n) => n === 2); // false
+zilt.iter([2, 2, 2]).every((n) => n === 2); // true
 ```
 
 ### `.unzip()`
@@ -331,7 +341,7 @@ Consumes an iterator over `n`-tuples and returns `n` arrays.
 
 ```ts
 // [[0, 1, 2], [3, 4, 5]]
-iter([
+zilt.iter([
     [0, 3],
     [1, 4],
     [2, 5],
@@ -347,7 +357,7 @@ Consumes the iterator and returns a pair of arrays.
 
 ```ts
 // [[2, 4], [1, 3]]
-iter([1, 2, 3, 4]).partition((n) => n % 2 === 0);
+zilt.iter([1, 2, 3, 4]).partition((n) => n % 2 === 0);
 ```
 
 ### `.consume()`
@@ -356,7 +366,7 @@ Consumes the iterator.
 
 ```ts
 // void
-range(0, 3).consume();
+zilt.range(0, 3).consume();
 ```
 
 ## **Adapter methods**
@@ -367,7 +377,7 @@ Creates an iterator yielding values with an index counter starting from 0.
 
 ```ts
 // [[4, 0], [5, 1], [6, 2]]
-iter([4, 5, 6]).enumerate().collect();
+zilt.iter([4, 5, 6]).enumerate().collect();
 ```
 
 ### `.filter()`
@@ -376,7 +386,7 @@ Creates an iterator which uses a callback to determine if an element should be y
 
 ```ts
 // [1, 3]
-range(0, 4)
+zilt.range(0, 4)
     .filter((n) => n % 2 === 1)
     .collect();
 ```
@@ -387,14 +397,16 @@ Creates an iterator that transforms each value in the original iterator using th
 
 ```ts
 // [0, 2, 4, 6]
-range(0, 4)
+zilt.range(0, 4)
     .map((n) => n * 2)
     .collect();
 ```
 
 ### `.flatten()`
 
-Creates an iterator which flattens nested array elements up to a certain depth (maxDepth).
+Creates an iterator which flattens nested array elements up to a certain depth (`maxDepth`).
+
+> NOTE: only number literals up to 10 are supported for `maxDepth` at the moment.
 
 ```ts
 const array = [
@@ -402,10 +414,10 @@ const array = [
     [2, [3]],
 ];
 // [0, 1, 2, [3]]
-iter(arr).flatten(1).collect();
+zilt.iter(arr).flatten(1).collect();
 
 // [0, 1, 2, 3]
-iter(arr).flatten(2).collect();
+zilt.iter(arr).flatten(2).collect();
 ```
 
 ### `.flatMap()`
@@ -414,7 +426,7 @@ Creates an iterator which is equivalent to `.map().flatten(1)`
 
 ```ts
 // [1, -1, 2, -2]
-iter([1, 2])
+zilt.iter([1, 2])
     .flatMap((n) => [n, -n])
     .collect();
 ```
@@ -425,7 +437,7 @@ Creates an iterator which only keeps the first `num` values.
 
 ```ts
 // [0, 1, 2]
-range(0, 6).take(3).collect();
+zilt.range(0, 6).take(3).collect();
 ```
 
 ### `.takeWhile()`
@@ -434,7 +446,7 @@ Creates an iterator which yields values until a predicate is false.
 
 ```ts
 // [0, 1, 2]
-range(0, 6)
+zilt.range(0, 6)
     .takeWhile((n) => n < 3)
     .collect();
 ```
@@ -445,7 +457,7 @@ Creates an iterator which skips the first num values.
 
 ```ts
 // [3, 4, 5]
-range(0, 6).skip(3).collect();
+zilt.range(0, 6).skip(3).collect();
 ```
 
 ### `.skipWhile()`
@@ -454,7 +466,7 @@ Creates an iterator which skips values while a predicate is true.
 
 ```ts
 // [3, 4, 5]
-range(0, 6)
+zilt.range(0, 6)
     .skipWhile((n) => n < 3)
     .collect();
 ```
@@ -465,7 +477,7 @@ Creates an iterator which only yields elements from start to end (excluded). It 
 
 ```ts
 // [1, 2]
-iter([0, 1, 1, 2, 3]).slice(2, 4).collect();
+zilt.iter([0, 1, 1, 2, 3]).slice(2, 4).collect();
 ```
 
 ### `.step()`
@@ -474,7 +486,7 @@ Creates an iterator that yields values by steps of `step` starting from the firs
 
 ```ts
 // [1, 4, 7]
-range(1, 10).step(3).collect();
+zilt.range(1, 10).step(3).collect();
 ```
 
 ### `.chain()`
@@ -483,7 +495,7 @@ Creates an iterator that extends the current iterator with the values of each pa
 
 ```ts
 // [0, 'foo', 'bar']
-iter([0]).chain(["foo"], ["bar"]).collect();
+zilt.iter([0]).chain(["foo"], ["bar"]).collect();
 ```
 
 ### `.cycle()`
@@ -492,10 +504,10 @@ Creates an iterator that repeats the current iterator count times. count default
 
 ```ts
 // [1, 2, 3, 1, 2, 3]
-range(1, 4).cycle(2).collect();
+zilt.range(1, 4).cycle(2).collect();
 
 // [1, 2, 3, 1, 2, 3, 1, 2]
-range(1, 4).cycle().take(8).collect();
+zilt.range(1, 4).cycle().take(8).collect();
 ```
 
 ### `.stretch()`
@@ -504,18 +516,18 @@ Creates an iterator that repeats each value of the current iterator count times.
 
 ```ts
 // [1, 1, 2, 2, 3, 3]
-iter([1, 2, 3]).stretch(2).collect();
+zilt.iter([1, 2, 3]).stretch(2).collect();
 ```
 
 ### `.nest()`
 
 Creates an iterator which repeats the provided iterable for each element in the current iterator. Elements are yielded as pairs.
 
-> NOTE: prefer using `.nestRange(start, end)` instead of `.nest(range(start, end))` to avoid the unnecessary buffering of iterable values.
+> NOTE: prefer using `.nestRange(...)` instead of `.nest(zilt.range(...))` to avoid the unnecessary buffering of iterable values.
 
 ```ts
 // [[0, 'a'], [0, 'b'], [1, 'a'], [1, 'b']]
-range(2).nest(["a", "b"]).collect();
+zilt.range(2).nest(["a", "b"]).collect();
 ```
 
 ### `.nestRange()`
@@ -524,10 +536,10 @@ Creates an iterator which repeats the provided range for each element in the cur
 
 ```ts
 // [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]]
-range(2).nestRange(3).collect();
+zilt.range(2).nestRange(3).collect();
 
 // [[0, 0], [0, -1], [1, 0], [1, -1]]
-range(2).nestRange(0, -2).collect();
+zilt.range(2).nestRange(0, -2).collect();
 ```
 
 ### `.zip()`
@@ -536,7 +548,7 @@ Creates an iterator over `n`-tuples from "merging" `n` iterators together.
 
 ```ts
 // [[0, 6, "foo"], [1, 7, "bar"]]
-iter([0, 1]).zip([6, 7], ["foo", "bar"]).collect();
+zilt.iter([0, 1]).zip([6, 7], ["foo", "bar"]).collect();
 ```
 
 ### `.chunks()`
@@ -545,7 +557,7 @@ Creates an iterator which yields elements by chunks of `k`.
 
 ```ts
 // [[0, 1], [2, 3], [4]]
-iter([0, 1, 2, 3, 4]).chunks(2).collect();
+zilt.iter([0, 1, 2, 3, 4]).chunks(2).collect();
 ```
 
 ### `.windows()`
@@ -554,7 +566,7 @@ Creates an iterator which yields every consecutive `k`-element window.
 
 ```ts
 // [[0, 1], [1, 2], [2, 3], [3, 4]]
-iter([0, 1, 2, 3, 4]).windows(2).collect();
+zilt.iter([0, 1, 2, 3, 4]).windows(2).collect();
 ```
 
 ### `.accumulate()`
@@ -563,7 +575,7 @@ Creates an iterator which updates and yields an accumulator using the provided f
 
 ```ts
 // [0, 1, 3, 6, 10]
-range(0, 5)
+zilt.range(0, 5)
     .accumulate((acc, n) => acc + n)
     .collect();
 ```
@@ -574,7 +586,7 @@ Creates an iterator which filters out duplicate values.
 
 ```ts
 // [0, 1, 2, 3, 4]
-iter([0, 1, 1, 2, 3, 2, 4]).unique().collect();
+zilt.iter([0, 1, 1, 2, 3, 2, 4]).unique().collect();
 ```
 
 ### `.uniqueBy()`
@@ -583,7 +595,7 @@ Creates an iterator which filters out duplicate values using a `getKey` function
 
 ```ts
 // [0, 1, 2, 3, 4]
-iter([0, 1, 1, 2, 3, 2, 4])
+zilt.iter([0, 1, 1, 2, 3, 2, 4])
     .uniqueBy((n) => n)
     .collect();
 ```
@@ -596,7 +608,7 @@ Creates an iterator that invokes a callback on each element before yielding.
 // [1, 10, 2, 20, 3, 30]
 const out: number[] = [];
 
-range(1, 4)
+zilt.range(1, 4)
     .inspect((n) => out.push(n))
     .map((n) => n * 10)
     .inspect((n) => out.push(n))

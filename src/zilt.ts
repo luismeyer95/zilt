@@ -1,6 +1,7 @@
 import {
     MapToIterType,
     NumberLiteral,
+    PickIterType,
     RecursiveFlatten,
     TupleToUnion,
     Unzip,
@@ -38,26 +39,6 @@ export function once<T>(value: T): ZiltIterator<T> {
 }
 
 /**
- * Creates an iterator that yields the values of each passed iterable in sequence.
- *
- * @example
- * // [0, 1, 'foo']
- * chain([0, 1], ['foo'])
- *   .collect();
- */
-export function chain<T>(...iterables: Iterable<T>[]): ZiltIterator<T> {
-    return new ZiltIterator(
-        (function* () {
-            for (const it of iterables) {
-                for (const item of it) {
-                    yield item;
-                }
-            }
-        })()
-    );
-}
-
-/**
  * Creates an iterator over a range of numbers (end excluded).
  * @example
  * range().collect()        // [0, 1, ...] (infinite)
@@ -74,7 +55,7 @@ export function range(...args: number[]) {
         end = Infinity;
 
     if (args.length === 2) [start, end] = args;
-    else if (args.length === 1) end = args[0];
+    else if (args.length === 1) [end] = args;
 
     const step = start < end ? 1 : -1;
 
@@ -85,6 +66,56 @@ export function range(...args: number[]) {
     })();
 
     return iter(iterable);
+}
+
+/**
+ * Creates an iterator that yields the values of each passed iterable in sequence.
+ *
+ * @example
+ * // [0, 1, 'foo']
+ * chain([0, 1], ['foo'])
+ *   .collect();
+ */
+export function chain<I extends Iterable<any>>(
+    ...iterables: I[]
+): ZiltIterator<PickIterType<I>> {
+    return new ZiltIterator(
+        (function* () {
+            for (const it of iterables) {
+                for (const item of it) {
+                    yield item;
+                }
+            }
+        })()
+    );
+}
+
+/**
+ * Creates an iterator over n-tuples from "merging" n iterators together.
+ *
+ * @example
+ * // [[0, 6, "foo"], [1, 7, "bar"]]
+ * zip([0, 1], [6, 7], ["foo", "bar"])
+ *   .collect();
+ */
+export function zip<I extends Iterable<any>[]>(
+    ...iterables: I
+): ZiltIterator<MapToIterType<I>> {
+    return new ZiltIterator(
+        (function* () {
+            if (iterables.length === 0) return;
+
+            const iters = iterables.map((it) => it[Symbol.iterator]());
+            let results = iters.map((it) => it.next());
+
+            while (results.every((res) => !res.done)) {
+                const values = results.map((res) => res.value);
+                yield values as MapToIterType<I>;
+
+                results = iters.map((it) => it.next());
+            }
+        })()
+    );
 }
 
 class ZiltIterator<T> {
