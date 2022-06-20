@@ -28,9 +28,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="https://i.imgur.com/V9jWp3N.png" alt="Logo" width="300" height="300">
-  </a>
+  <img src="https://i.imgur.com/V9jWp3N.png" alt="Logo" width="300" height="300">
   <p align="center">
     <h2>A lazy iterator library in TypeScript.</h2>
     <br />
