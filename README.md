@@ -132,8 +132,10 @@ npm install zilt
 # **Usage**
 
 ```ts
+// ESM
 import * as zilt from "zilt";
-// or
+
+// CommonJS
 const zilt = require("zilt");
 ```
 
