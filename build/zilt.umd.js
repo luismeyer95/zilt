@@ -31,6 +31,20 @@
             yield value;
         })());
     }
+    function range(...args) {
+        let start = 0, end = Infinity;
+        if (args.length === 2)
+            [start, end] = args;
+        else if (args.length === 1)
+            [end] = args;
+        const step = start < end ? 1 : -1;
+        const iterable = (function* () {
+            for (let i = start; i !== end; i += step) {
+                yield i;
+            }
+        })();
+        return iter(iterable);
+    }
     /**
      * Creates an iterator that yields the values of each passed iterable in sequence.
      *
@@ -48,19 +62,26 @@
             }
         })());
     }
-    function range(...args) {
-        let start = 0, end = Infinity;
-        if (args.length === 2)
-            [start, end] = args;
-        else if (args.length === 1)
-            end = args[0];
-        const step = start < end ? 1 : -1;
-        const iterable = (function* () {
-            for (let i = start; i !== end; i += step) {
-                yield i;
+    /**
+     * Creates an iterator over n-tuples from "merging" n iterators together.
+     *
+     * @example
+     * // [[0, 6, "foo"], [1, 7, "bar"]]
+     * zip([0, 1], [6, 7], ["foo", "bar"])
+     *   .collect();
+     */
+    function zip(...iterables) {
+        return new ZiltIterator((function* () {
+            if (iterables.length === 0)
+                return;
+            const iters = iterables.map((it) => it[Symbol.iterator]());
+            let results = iters.map((it) => it.next());
+            while (results.every((res) => !res.done)) {
+                const values = results.map((res) => res.value);
+                yield values;
+                results = iters.map((it) => it.next());
             }
-        })();
-        return iter(iterable);
+        })());
     }
     class ZiltIterator {
         constructor(iterable) {
@@ -851,6 +872,7 @@
     exports.iter = iter;
     exports.once = once;
     exports.range = range;
+    exports.zip = zip;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

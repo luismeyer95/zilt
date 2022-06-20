@@ -1,4 +1,4 @@
-import { MapToIterType, NumberLiteral, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
+import { MapToIterType, NumberLiteral, PickIterType, RecursiveFlatten, TupleToUnion, Unzip } from "./utils";
 import ZiltError from "./zilt.error";
 export { ZiltError };
 /**
@@ -20,15 +20,6 @@ export declare function iter<T>(input: Iterable<T>): ZiltIterator<T>;
  */
 export declare function once<T>(value: T): ZiltIterator<T>;
 /**
- * Creates an iterator that yields the values of each passed iterable in sequence.
- *
- * @example
- * // [0, 1, 'foo']
- * chain([0, 1], ['foo'])
- *   .collect();
- */
-export declare function chain<T>(...iterables: Iterable<T>[]): ZiltIterator<T>;
-/**
  * Creates an iterator over a range of numbers (end excluded).
  * @example
  * range().collect()        // [0, 1, ...] (infinite)
@@ -40,6 +31,24 @@ export declare function chain<T>(...iterables: Iterable<T>[]): ZiltIterator<T>;
 export declare function range(start: number, end: number): ZiltIterator<number>;
 export declare function range(end: number): ZiltIterator<number>;
 export declare function range(): ZiltIterator<number>;
+/**
+ * Creates an iterator that yields the values of each passed iterable in sequence.
+ *
+ * @example
+ * // [0, 1, 'foo']
+ * chain([0, 1], ['foo'])
+ *   .collect();
+ */
+export declare function chain<I extends Iterable<any>>(...iterables: I[]): ZiltIterator<PickIterType<I>>;
+/**
+ * Creates an iterator over n-tuples from "merging" n iterators together.
+ *
+ * @example
+ * // [[0, 6, "foo"], [1, 7, "bar"]]
+ * zip([0, 1], [6, 7], ["foo", "bar"])
+ *   .collect();
+ */
+export declare function zip<I extends Iterable<any>[]>(...iterables: I): ZiltIterator<MapToIterType<I>>;
 declare class ZiltIterator<T> {
     private generator;
     constructor(iterable: Iterable<T>);
