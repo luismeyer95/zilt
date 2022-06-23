@@ -102,7 +102,6 @@
                     <li><a href="#cycle">.cycle()</a></li>
                     <li><a href="#stretch">.stretch()</a></li>
                     <li><a href="#nest">.nest()</a></li>
-                    <li><a href="#nestrange">.nestRange()</a></li>
                     <li><a href="#zip">.zip()</a></li>
                     <li><a href="#chunks">.chunks()</a></li>
                     <li><a href="#windows">.windows()</a></li>
@@ -510,23 +509,17 @@ zilt.iter([1, 2, 3]).stretch(2).collect();
 
 Creates an iterator which repeats the provided iterable for each element in the current iterator. Elements are yielded as pairs.
 
-> NOTE: prefer using `.nestRange(...)` instead of `.nest(zilt.range(...))` to avoid the unnecessary buffering of iterable values.
+> NOTE: prefer using `.nest(start, end)` instead of `.nest(range(start, end))` to avoid the unnecessary buffering of iterable values.
 
 ```ts
 // [[0, 'a'], [0, 'b'], [1, 'a'], [1, 'b']]
 zilt.range(2).nest(["a", "b"]).collect();
-```
 
-### `.nestRange()`
-
-Creates an iterator which repeats the provided range for each element in the current iterator. Elements are yielded as pairs.
-
-```ts
 // [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]]
-zilt.range(2).nestRange(3).collect();
+zilt.range(2).nest(3).collect();
 
 // [[0, 0], [0, -1], [1, 0], [1, -1]]
-zilt.range(2).nestRange(0, -2).collect();
+zilt.range(2).nest(0, -2).collect();
 ```
 
 ### `.zip()`

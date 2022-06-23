@@ -1064,17 +1064,36 @@ class ZiltIterator<T> {
     /**
      * Creates an iterator which repeats the provided iterable for each element in the current iterator. Elements are yielded as pairs.
      *
-     * NOTE: prefer using `.nestRange(start, end)` instead of `.nest(range(start, end))` to avoid the unnecessary buffering of iterable values.
+     * NOTE: prefer using `.nest(start, end)` instead of `.nest(range(start, end))` to avoid the unnecessary buffering of iterable values.
      *
      * @example
      * // [[0, 'a'], [0, 'b'], [1, 'a'], [1, 'b']]
      * range(2)
      *   .nest(['a', 'b'])
      *   .collect();
+     *
+     * // [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]]
+     * range(2)
+     *   .nest(3)
+     *   .collect();
+     *
+     * // [[0, 0], [0, -1], [1, 0], [1, -1]]
+     * range(2)
+     *   .nest(0, -2)
+     *   .collect();
      */
-    nest<U>(iterable: Iterable<U>): ZiltIterator<[T, U]> {
+    nest(start: number, end: number): ZiltIterator<[T, number]>;
+    nest(end: number): ZiltIterator<[T, number]>;
+    nest<U>(iterable: Iterable<U>): ZiltIterator<[T, U]>;
+    nest<U>(...args: number[] | [Iterable<U>]) {
+        if (typeof args[0] == "number") {
+            return this._nestRange(...(args as number[]));
+        }
+
         const previous = this.generator;
-        const nested = [...iterable];
+
+        const [iterable] = args;
+        const nested = Array.isArray(iterable) ? iterable : [...iterable];
 
         return iter(
             (function* () {
@@ -1087,23 +1106,7 @@ class ZiltIterator<T> {
         );
     }
 
-    /**
-     * Creates an iterator which repeats the provided range for each element in the current iterator. Elements are yielded as pairs.
-     *
-     * @example
-     * // [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]]
-     * range(2)
-     *   .nestRange(3)
-     *   .collect();
-     *
-     * // [[0, 0], [0, -1], [1, 0], [1, -1]]
-     * range(2)
-     *   .nestRange(0, -2)
-     *   .collect();
-     */
-    nestRange(start: number, end: number): ZiltIterator<[T, number]>;
-    nestRange(end: number): ZiltIterator<[T, number]>;
-    nestRange(...args: number[]): ZiltIterator<[T, number]> {
+    private _nestRange(...args: number[]): ZiltIterator<[T, number]> {
         const previous = this.generator;
 
         let start = 0,

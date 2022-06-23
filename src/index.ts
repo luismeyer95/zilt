@@ -1,4 +1,4 @@
-// import * as zilt from "./zilt";
+import * as zilt from "./zilt";
 
 // function draw(mat: number[][]) {
 //     const down = [1, 0];

@@ -683,7 +683,7 @@ describe("slice", () => {
     });
 });
 
-describe("nest, nestRange", () => {
+describe("nest", () => {
     it("should create a 2D iterator", () => {
         const pairs = [];
         const strs = ["hello", "world"];
@@ -700,13 +700,49 @@ describe("nest, nestRange", () => {
     it("should create a 2D iterator", () => {
         const pairs = [];
 
-        for (let i = 0; i < 3; ++i) {
-            for (let j = 0; j < 2; ++j) {
+        for (let i = 0; i < 2; ++i) {
+            for (let j = 0; j < 3; ++j) {
                 pairs.push([i, j]);
             }
         }
 
-        expect(range(3).nestRange(2).collect()).toMatchObject(pairs);
+        expect(range(2).nest(3).collect()).toMatchObject(pairs);
+    });
+
+    it("should create a 2D iterator", () => {
+        const pairs = [];
+
+        for (let i = 0; i < 2; ++i) {
+            for (let j = 0; j < 3; ++j) {
+                pairs.push([i, j]);
+            }
+        }
+
+        expect(range(2).nest(0, 3).collect()).toMatchObject(pairs);
+    });
+
+    it("should create a 2D iterator", () => {
+        const pairs = [];
+
+        for (let i = 0; i < 2; ++i) {
+            for (let j = 1; j > -3; --j) {
+                pairs.push([i, j]);
+            }
+        }
+
+        expect(range(2).nest(1, -3).collect()).toMatchObject(pairs);
+    });
+
+    it("should create a 2D iterator", () => {
+        const pairs = [];
+
+        for (let i = 0; i < 2; ++i) {
+            for (let j = 0; j > -3; --j) {
+                pairs.push([i, j]);
+            }
+        }
+
+        expect(range(2).nest(-3).collect()).toMatchObject(pairs);
     });
 });
 
@@ -779,7 +815,7 @@ describe("chaos", () => {
         };
 
         const result = () =>
-            iter([...text])
+            iter(text)
                 .stretch(2)
                 .chunks(8)
                 .map((line) => iter(line).rate((ch) => ch === " "))
