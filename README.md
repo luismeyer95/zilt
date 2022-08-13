@@ -42,6 +42,9 @@
   <summary><h1><b>Table of Contents</b></h1></summary>
   <ol>
     <li>
+        <a href="#example">Example</a>
+    </li>
+    <li>
       <a href="#installation">Installation</a>
     </li>
     <li><a href="#usage">Usage</a>
@@ -111,6 +114,91 @@
     <li><a href="#contributing">Contributing</a></li>
   </ol>
 </details>
+
+# **Example**
+
+Let's consider the following task: given a non-empty `height * width` matrix full of `'.'`'s, draw a zigzag pattern by writing `'O'`'s inside the matrix. This is a contrived example, but it helps demonstrate the capabilities of iterator adapters.
+
+```ts
+const input = [
+    [".", ".", ".", ".", ".", ".", ".", ".", "."],
+    [".", ".", ".", ".", ".", ".", ".", ".", "."],
+    [".", ".", ".", ".", ".", ".", ".", ".", "."],
+    [".", ".", ".", ".", ".", ".", ".", ".", "."],
+];
+
+const output = [
+    ["O", ".", ".", "O", ".", ".", "O", ".", "."],
+    ["O", ".", "O", "O", ".", "O", "O", ".", "O"],
+    ["O", "O", ".", "O", "O", ".", "O", "O", "."],
+    ["O", ".", ".", "O", ".", ".", "O", ".", "."],
+];
+
+expect(draw(input)).toMatchObject(output);
+```
+
+To create this function, we will want to iterate over the relevant matrix positions and overwrite them with an `'O'`. By observing the above `output`, we can draw the following conclusions:
+
+-   `[0, 0]` is the starting position
+-   The steps between cells can be described as follows:
+    -   `height - 1` vertical steps down are taken to reach the bottom of the matrix (direction: `[1, 0]`)
+    -   `height - 1` diagonal steps to the top right are taken to reach the top again (direction: `[-1, 1]`)
+    -   Repeat to infinity
+
+We can create an iterator over coordinate steps using the above algorithm:
+
+```ts
+function draw(matrix) {
+    const height = matrix.length;
+    const width = matrix[0].length;
+
+    const down = [1, 0];
+    const up = [-1, 1];
+
+    const steps = zilt.iter([down, up])
+        .stretch(height - 1) // [down * (height - 1), up * (height - 1)]
+        .cycle(); // repeat indefinitely
+
+    ...
+}
+```
+
+From there, we just need to initialize some matrix coordinates to `[0, 0]` and apply each iterator step to it to obtain the list of coordinates to draw `'O'`'s into. Since the iterator loops indefinitely, we need to make sure to stop drawing once the current coordinate is out of the matrix bounds.
+
+```ts
+function draw(matrix) {
+    ...
+
+    const steps = zilt.iter([down, up])
+        .stretch(height - 1)
+        .cycle();
+
+    let [y, x] = [0, 0];
+    for (const [ystep, xstep] of steps) {
+        if (x >= width) break;
+
+        matrix[y][x] = "O";
+        [y, x] = [y + ystep, x + xstep];
+    }
+}
+```
+
+I'm not advocating for this code style... but here's another way of writing the above using this library:
+
+```ts
+function draw(matrix) {
+    ...
+
+    const steps = zilt.iter([down, up])
+        .stretch(height - 1)
+        .cycle();
+
+    zilt.chain(zilt.once([0, 0]), steps)
+        .accumulate(([y, x], [ys, xs]) => [y + ys, x + xs])
+        .takeWhile(([_, x]) => x < width)
+        .forEach(([y, x]) => (matrix[y][x] = 'O'));
+}
+```
 
 # **Installation**
 
