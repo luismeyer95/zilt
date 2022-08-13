@@ -80,7 +80,6 @@
                     <li><a href="#max">.max()</a></li>
                     <li><a href="#some">.some()</a></li>
                     <li><a href="#every">.every()</a></li>
-                    <li><a href="#rate">.rate()</a></li>
                     <li><a href="#unzip">.unzip()</a></li>
                     <li><a href="#partition">.partition()</a></li>
                     <li><a href="#consume">.consume()</a></li>
@@ -345,15 +344,6 @@ Consumes the iterator and returns the number of elements that match a predicate.
 const arr = [10, 15, 15, 20];
 zilt.iter(arr).count(); // 4
 zilt.iter(arr).count((n) => n === 15); // 2
-```
-
-### `.rate()`
-
-Consumes the iterator and returns the percentage of elements that match a predicate.
-
-```ts
-const arr = [10, 15, 15, 20];
-zilt.iter(arr).rate((n) => n === 15); // 0.5
 ```
 
 ### `.nth()`
