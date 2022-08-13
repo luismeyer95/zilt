@@ -422,24 +422,6 @@ class ZiltIterator<T> {
     }
 
     /**
-     * Consumes the iterator and returns the percentage of elements that match a predicate.
-     *
-     * @example
-     * const arr = [10, 15, 15, 20];
-     * iter(arr).rate((n) => n === 15); // 0.5
-     */
-    rate(pred: (val: T) => boolean) {
-        let total = 0;
-
-        const count = this.reduce((acc, val) => {
-            total += 1;
-            return pred(val) ? acc + 1 : acc;
-        }, 0);
-
-        return count / total;
-    }
-
-    /**
      * Creates an iterator which flattens nested array elements up to a certain depth (`maxDepth`).
      *
      * @example

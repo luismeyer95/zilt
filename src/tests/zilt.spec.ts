@@ -282,12 +282,6 @@ describe("count", () => {
     });
 });
 
-describe("rate", () => {
-    it("should return the percentage of values satisfying the predicate", () => {
-        expect(range(4, 9).rate((n) => n % 2 === 0)).toBe(3 / 5);
-    });
-});
-
 describe("flatten", () => {
     it("should flatten array of arrays", () => {
         const result = iter([
@@ -788,7 +782,7 @@ describe("chaos", () => {
         expect(draw(mat)).toMatchObject(expected);
     });
 
-    it("should compute the rate of space chars per line after doubling each char + wrapping on row length 8", () => {
+    it("should count the space chars per line after doubling each char + wrapping on row length 8", () => {
         const text = "Hi hey hello hola bonjour";
 
         const expected = () => {
@@ -810,7 +804,7 @@ describe("chaos", () => {
 
             return lines.map((line) => {
                 const spaces = line.split(" ").length - 1;
-                return spaces / line.length;
+                return spaces;
             });
         };
 
@@ -818,7 +812,7 @@ describe("chaos", () => {
             iter(text)
                 .stretch(2)
                 .chunks(8)
-                .map((line) => iter(line).rate((ch) => ch === " "))
+                .map((line) => iter(line).count((ch) => ch === " "))
                 .collect();
 
         expect(result()).toMatchObject(expected());
