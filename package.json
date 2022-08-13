@@ -15,7 +15,12 @@
         "build": "npm run build:js -s && npm run build:minjs -s",
         "clean": "rm -rf coverage build"
     },
-    "keywords": [],
+    "keywords": [
+        "lazy",
+        "iterator",
+        "collection",
+        "iter"
+    ],
     "author": "Luis",
     "repository": {
         "type": "git",
