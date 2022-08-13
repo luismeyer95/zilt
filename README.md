@@ -18,7 +18,7 @@
 <div align="center">
 
 <a href="">[![Build](https://circleci.com/gh/luismeyer95/zilt.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/zilt)</a>
-<a href="">[![Downloads](https://img.shields.io/github/downloads/luismeyer95/zilt/total?style=flat-square)](about:blank)</a>
+<a href="">[![Downloads](https://img.shields.io/npm/dt/zilt?style=flat-square)](about:blank)</a>
 <a href="">[![LastCommit](https://img.shields.io/github/last-commit/luismeyer95/zilt?style=flat-square)](about:blank)</a>
 <a href="">[![Stars](https://img.shields.io/github/stars/luismeyer95/zilt?style=flat-square)](about:blank)</a>
 
