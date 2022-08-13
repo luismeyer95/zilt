@@ -21,7 +21,6 @@
 <a href="">[![Downloads](https://img.shields.io/github/downloads/luismeyer95/zilt/total?style=flat-square)](about:blank)</a>
 <a href="">[![LastCommit](https://img.shields.io/github/last-commit/luismeyer95/zilt?style=flat-square)](about:blank)</a>
 <a href="">[![Stars](https://img.shields.io/github/stars/luismeyer95/zilt?style=flat-square)](about:blank)</a>
-<a href="">[![HitCount](http://hits.dwyl.com/luismeyer95/zilt.svg)](http://hits.dwyl.com/luismeyer95/zilt)</a>
 
 </div>
 
@@ -32,8 +31,6 @@
   <p align="center">
     <h2>A lazy iterator library in TypeScript.</h2>
     <br />
-    <a href="https://github.com/luismeyer95/zilt">View Demo</a>
-    ·
     <a href="https://github.com/luismeyer95/zilt/issues">Report Bug</a>
     ·
     <a href="https://github.com/luismeyer95/zilt/issues">Request Feature</a>
@@ -44,9 +41,6 @@
 <details>
   <summary><h1><b>Table of Contents</b></h1></summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    </li>
     <li>
       <a href="#installation">Installation</a>
     </li>
@@ -117,10 +111,6 @@
     <li><a href="#contributing">Contributing</a></li>
   </ol>
 </details>
-
-# **About The Project**
-
-I created this as a fun little project to learn about generators and wanted to be able to extend it as time goes by. This is also my first time publishing a library on npm, I will try my best to make it production-grade and to maintain it over the years.
 
 # **Installation**
 
