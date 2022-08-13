@@ -38,29 +38,34 @@
 </div>
 
 <!-- TABLE OF CONTENTS -->
-<details>
   <summary><h1><b>Table of Contents</b></h1></summary>
   <ol>
+    <li>
+        <a href="#presentation">Presentation</a>
+    </li>
     <li>
         <a href="#example">Example</a>
     </li>
     <li>
       <a href="#installation">Installation</a>
     </li>
-    <li><a href="#usage">Usage</a>
+    <li><a href="#documentation">Documentation</a>
         <ul>
             <li>
-                <a href="#builders">Builders</a>
-                <ul>
-                    <li><a href="#iter">iter()</a></li>
-                    <li><a href="#once">once()</a></li>
-                    <li><a href="#range">range()</a></li>
-                    <li><a href="#chain">chain()</a></li>
-                    <li><a href="#chain">zip()</a></li>
-                </ul>
+                <details>
+                    <summary><a href="#builders">Builders</a></summary>
+                    <ul>
+                        <li><a href="#iter">iter()</a></li>
+                        <li><a href="#once">once()</a></li>
+                        <li><a href="#range">range()</a></li>
+                        <li><a href="#chain">chain()</a></li>
+                        <li><a href="#chain">zip()</a></li>
+                    </ul>
+                </details>
             </li>
             <li>
-                <a href="#consumers">Consumer methods</a>
+                <details>
+                    <summary><a href="#consumers">Consumer methods</a></summary>
                 <ul>
                     <li><a href="#collect">.collect()</a></li>
                     <li><a href="#foreach">.forEach()</a></li>
@@ -80,10 +85,12 @@
                     <li><a href="#partition">.partition()</a></li>
                     <li><a href="#consume">.consume()</a></li>
                 </ul>
+                </details>
             </li>
             <li>
-                <a href="#adapters">Adapter methods</a>
-                <ul>
+                <details>
+                    <summary><a href="#adapters">Adapter methods</a></summary>
+                    <ul>
                     <li><a href="#enumerate">.enumerate()</a></li>
                     <li><a href="#filter">.filter()</a></li>
                     <li><a href="#map">.map()</a></li>
@@ -107,17 +114,41 @@
                     <li><a href="#uniqueby">.uniqueBy()</a></li>
                     <li><a href="#inspect">.inspect()</a></li>
                 </ul>
+                </details>
             </li>
         </ul>
     </li>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <li><a href="#contributing">Contributing</a></li>
   </ol>
-</details>
+
+# **Presentation**
+
+`zilt` is a TypeScript lazy [iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) library. It lets you wrap iterable objects to augment them with useful utility methods for declarative-style data processing. The library uses ES6 generators under the hood and has no dependencies.
+
+Awesome iterator libraries already exist, why create another?
+
+-   To learn about ES6 generators
+-   To learn about creating and publishing libraries from scratch
+-   For fun
+
+# **Installation**
+
+```sh
+npm install zilt
+```
+
+```ts
+// ESM
+import * as zilt from "zilt";
+
+// CommonJS
+const zilt = require("zilt");
+```
 
 # **Example**
 
-Let's consider the following task: given a non-empty `height * width` matrix full of `'.'`'s, draw a zigzag pattern by writing `'O'`'s inside the matrix. This is a contrived example, but it helps demonstrate the capabilities of iterator adapters.
+Let's consider the following exercise: given a non-empty `height * width` matrix full of `'.'`'s, draw a zigzag pattern by writing `'O'`'s inside the matrix. This is a contrived example, but it helps demonstrate the capabilities of iterator adapters.
 
 ```ts
 const input = [
@@ -137,7 +168,7 @@ const output = [
 expect(draw(input)).toMatchObject(output);
 ```
 
-To create this function, we will want to iterate over the relevant matrix positions and overwrite them with an `'O'`. By observing the above `output`, we can draw the following conclusions:
+To solve this problem, we will want to iterate over the relevant matrix positions and overwrite their corresponding cells with an `'O'`. By observing the above `output`, we can draw the following conclusions:
 
 -   `[0, 0]` is the starting position
 -   The steps between cells can be described as follows:
@@ -145,9 +176,11 @@ To create this function, we will want to iterate over the relevant matrix positi
     -   `height - 1` diagonal steps to the top right are taken to reach the top again (direction: `[-1, 1]`)
     -   Repeat to infinity
 
-We can create an iterator over coordinate steps using the above algorithm:
+We can create a `zilt` iterator over the infinite step sequence from above using the <a href="#stretch">.stretch()</a> and <a href="#cycle">.cycle()</a> methods.
 
 ```ts
+import * as zilt from 'zilt';
+
 function draw(matrix) {
     const height = matrix.length;
     const width = matrix[0].length;
@@ -155,15 +188,15 @@ function draw(matrix) {
     const down = [1, 0];
     const up = [-1, 1];
 
-    const steps = zilt.iter([down, up])
+    const steps = zilt.iter([down, up]) // [down, up]
         .stretch(height - 1) // [down * (height - 1), up * (height - 1)]
-        .cycle(); // repeat indefinitely
+        .cycle(); // repeat the above indefinitely
 
     ...
 }
 ```
 
-From there, we just need to initialize some matrix coordinates to `[0, 0]` and apply each iterator step to it to obtain the list of coordinates to draw `'O'`'s into. Since the iterator loops indefinitely, we need to make sure to stop drawing once the current coordinate is out of the matrix bounds.
+From there, we just need to initialize some matrix coordinates to `[0, 0]` and apply each directional step to it in order to loop over the relevant cells and overwrite their content with `'O'`. Since the iterator loops indefinitely, we need to make sure to stop the drawing loop once the current coordinate is out of the matrix bounds.
 
 ```ts
 function draw(matrix) {
@@ -183,7 +216,7 @@ function draw(matrix) {
 }
 ```
 
-I'm not advocating for this code style... but here's another way of writing the above using this library:
+I'm not advocating for this code style, but here's another way of writing the above using this library.
 
 ```ts
 function draw(matrix) {
@@ -200,21 +233,7 @@ function draw(matrix) {
 }
 ```
 
-# **Installation**
-
-```sh
-npm install zilt
-```
-
-# **Usage**
-
-```ts
-// ESM
-import * as zilt from "zilt";
-
-// CommonJS
-const zilt = require("zilt");
-```
+# **Documentation**
 
 ## Builders
 
