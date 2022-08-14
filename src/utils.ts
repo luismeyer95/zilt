@@ -18,7 +18,7 @@ export type Unzip<T> = T extends any[]
 
 export type TupleToUnion<T extends any[]> = T[number];
 
-type Decr = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+type Decr = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 export type RecursiveFlatten<N extends number, T> = N extends 0
     ? T

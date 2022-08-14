@@ -435,12 +435,12 @@ class ZiltIterator<T> {
      *   .flatten(2)
      *   .collect();
      */
-    flatten<N extends number>(
+    flat<N extends number>(
         maxDepth: NumberLiteral<N>
     ): ZiltIterator<RecursiveFlatten<N, T>> {
-        if (maxDepth < 0 || maxDepth > 10)
+        if (maxDepth < 0 || maxDepth > 15)
             throw new ZiltError(
-                "Invalid depth for flatten, allowed range is [0, 10]"
+                "Invalid depth for flatten, allowed range is [0, 15]"
             );
 
         function* recursiveFlatten<U>(
@@ -656,7 +656,7 @@ class ZiltIterator<T> {
      *   .collect();
      */
     flatMap<F extends (val: T, index: number) => any>(func: F) {
-        return this.map(func).flatten(1);
+        return this.map(func).flat(1);
     }
 
     /**

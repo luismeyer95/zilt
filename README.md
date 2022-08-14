@@ -93,7 +93,7 @@
                     <li><a href="#enumerate">.enumerate()</a></li>
                     <li><a href="#filter">.filter()</a></li>
                     <li><a href="#map">.map()</a></li>
-                    <li><a href="#flatten">.flatten()</a></li>
+                    <li><a href="#flat">.flat()</a></li>
                     <li><a href="#flatmap">.flatMap()</a></li>
                     <li><a href="#take">.take()</a></li>
                     <li><a href="#takewhile">.takeWhile()</a></li>
@@ -473,11 +473,11 @@ zilt.range(0, 4)
     .collect();
 ```
 
-### `.flatten()`
+### `.flat()`
 
 Creates an iterator which flattens nested array elements up to a certain depth (`maxDepth`).
 
-> NOTE: only number literals up to 10 are supported for `maxDepth` at the moment.
+> NOTE: this method only accepts **number literals** for the `maxDepth` parameter in order to correctly infer the output iterator element type.
 
 ```ts
 const array = [
@@ -485,15 +485,15 @@ const array = [
     [2, [3]],
 ];
 // [0, 1, 2, [3]]
-zilt.iter(arr).flatten(1).collect();
+zilt.iter(arr).flat(1).collect();
 
 // [0, 1, 2, 3]
-zilt.iter(arr).flatten(2).collect();
+zilt.iter(arr).flat(2).collect();
 ```
 
 ### `.flatMap()`
 
-Creates an iterator which is equivalent to `.map().flatten(1)`
+Creates an iterator which is equivalent to `.map().flat(1)`
 
 ```ts
 // [1, -1, 2, -2]

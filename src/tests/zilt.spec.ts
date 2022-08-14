@@ -288,7 +288,7 @@ describe("flatten", () => {
             [0, 1],
             [2, 3],
         ])
-            .flatten(1)
+            .flat(1)
             .collect();
 
         expect(result).toMatchObject([0, 1, 2, 3]);
@@ -296,21 +296,21 @@ describe("flatten", () => {
 
     it("should flatten mixed depth array", () => {
         const arr = [0, [1], [[2]]];
-        const result = iter(arr).flatten(1).collect();
+        const result = iter(arr).flat(1).collect();
 
         expect(result).toMatchObject([0, 1, [2]]);
     });
 
     it("should deep flatten mixed depth array", () => {
         const arr = [0, [1], [[2]]];
-        const result = iter(arr).flatten(2).collect();
+        const result = iter(arr).flat(2).collect();
 
         expect(result).toMatchObject([0, 1, 2]);
     });
 
     it("should no-op on 0 depth", () => {
         const arr = [0, [1], [[2]]];
-        const result = iter(arr).flatten(0).collect();
+        const result = iter(arr).flat(0).collect();
 
         expect(result).toMatchObject([0, [1], [[2]]]);
     });
