@@ -65,7 +65,7 @@ export function range(...args: number[]) {
         }
     })();
 
-    return iter(iterable);
+    return new ZiltIterator(iterable);
 }
 
 /**
@@ -79,15 +79,15 @@ export function range(...args: number[]) {
 export function chain<I extends Iterable<any>>(
     ...iterables: I[]
 ): ZiltIterator<PickIterType<I>> {
-    return new ZiltIterator(
-        (function* () {
-            for (const it of iterables) {
-                for (const item of it) {
-                    yield item;
-                }
+    const iterable = (function* () {
+        for (const it of iterables) {
+            for (const item of it) {
+                yield item;
             }
-        })()
-    );
+        }
+    })();
+
+    return new ZiltIterator(iterable);
 }
 
 /**
@@ -101,21 +101,21 @@ export function chain<I extends Iterable<any>>(
 export function zip<I extends Iterable<any>[]>(
     ...iterables: I
 ): ZiltIterator<MapToIterType<I>> {
-    return new ZiltIterator(
-        (function* () {
-            if (iterables.length === 0) return;
+    const iterable = (function* () {
+        if (iterables.length === 0) return;
 
-            const iters = iterables.map((it) => it[Symbol.iterator]());
-            let results = iters.map((it) => it.next());
+        const iters = iterables.map((it) => it[Symbol.iterator]());
+        let results = iters.map((it) => it.next());
 
-            while (results.every((res) => !res.done)) {
-                const values = results.map((res) => res.value);
-                yield values as MapToIterType<I>;
+        while (results.every((res) => !res.done)) {
+            const values = results.map((res) => res.value);
+            yield values as MapToIterType<I>;
 
-                results = iters.map((it) => it.next());
-            }
-        })()
-    );
+            results = iters.map((it) => it.next());
+        }
+    })();
+
+    return new ZiltIterator(iterable);
 }
 
 class ZiltIterator<T> {
@@ -172,18 +172,18 @@ class ZiltIterator<T> {
     map<F extends (val: T, index: number) => any>(
         func: F
     ): ZiltIterator<ReturnType<F>> {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let index = 0;
+        const iterable = (function* () {
+            let index = 0;
 
-                for (const item of previous()) {
-                    yield func(item, index);
-                    index += 1;
-                }
-            })()
-        );
+            for (const item of source()) {
+                yield func(item, index);
+                index += 1;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -196,20 +196,20 @@ class ZiltIterator<T> {
      *   .collect();
      */
     filter(func: (val: T, index: number) => boolean) {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let index = 0;
+        const iterable = (function* () {
+            let index = 0;
 
-                for (const item of previous()) {
-                    if (func(item, index)) {
-                        yield item;
-                        index += 1;
-                    }
+            for (const item of source()) {
+                if (func(item, index)) {
+                    yield item;
+                    index += 1;
                 }
-            })()
-        );
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -224,19 +224,19 @@ class ZiltIterator<T> {
     skip(num: number) {
         if (num < 0) throw new ZiltError("Invalid skip parameter");
 
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let iter = previous();
-                for (let i = 0; i < num; ++i) {
-                    iter.next();
-                }
-                for (const item of iter) {
-                    yield item;
-                }
-            })()
-        );
+        const iterable = (function* () {
+            let iter = source();
+            for (let i = 0; i < num; ++i) {
+                iter.next();
+            }
+            for (const item of iter) {
+                yield item;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -249,25 +249,25 @@ class ZiltIterator<T> {
      *   .collect();
      */
     skipWhile(pred: (val: T, index: number) => boolean): ZiltIterator<T> {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let iter = previous();
-                let value = iter.next().value;
-                let index = 0;
+        const iterable = (function* () {
+            let iter = source();
+            let value = iter.next().value;
+            let index = 0;
 
-                while (pred(value, index)) {
-                    value = iter.next().value;
-                    index += 1;
-                }
+            while (pred(value, index)) {
+                value = iter.next().value;
+                index += 1;
+            }
 
-                yield value;
-                for (const item of iter) {
-                    yield item;
-                }
-            })()
-        );
+            yield value;
+            for (const item of iter) {
+                yield item;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -282,17 +282,17 @@ class ZiltIterator<T> {
     take(num: number) {
         if (num < 0) throw new ZiltError("Invalid take parameter");
 
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                for (const item of previous()) {
-                    if (num === 0) break;
-                    yield item;
-                    num -= 1;
-                }
-            })()
-        );
+        const iterable = (function* () {
+            for (const item of source()) {
+                if (num === 0) break;
+                yield item;
+                num -= 1;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -305,10 +305,10 @@ class ZiltIterator<T> {
      *   .collect();
      */
     takeWhile(pred: (val: T, index: number) => boolean) {
-        const previous = this.generator;
+        const source = this.generator;
 
-        this.generator = function* () {
-            let iter = previous();
+        const iterable = (function* () {
+            let iter = source();
             let value = iter.next().value;
             let index = 0;
 
@@ -317,9 +317,9 @@ class ZiltIterator<T> {
                 value = iter.next().value;
                 index += 1;
             }
-        };
+        })();
 
-        return this;
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -341,7 +341,7 @@ class ZiltIterator<T> {
     reduce(func: (acc: T, element: T) => T, initializer: T): T;
     reduce<U>(func: (acc: U, element: T) => U, initializer: U): U;
     reduce(func: any, initializer: any = null) {
-        const iter = this[Symbol.iterator]();
+        const iter = this.generator();
 
         // Empty iterator without initializer, return early
         let first = iter.next();
@@ -382,31 +382,31 @@ class ZiltIterator<T> {
         initializer: U
     ): ZiltIterator<U>;
     accumulate(func: any, initializer: any = null) {
-        const previous = this[Symbol.iterator]();
+        const iter = this.generator();
 
         // Empty iterator without initializer, return early
-        let first = previous.next();
+        let first = iter.next();
         if (initializer === null && first.done) {
             throw new ZiltError(
                 "Reduce of empty iterator with no initial value"
             );
         }
 
-        return iter(
-            (function* () {
-                let acc =
-                    initializer === null
-                        ? first.value
-                        : func(initializer, first.value);
+        const iterable = (function* () {
+            let acc =
+                initializer === null
+                    ? first.value
+                    : func(initializer, first.value);
 
+            yield acc;
+
+            for (const item of iter) {
+                acc = func(acc, item);
                 yield acc;
+            }
+        })();
 
-                for (const item of previous) {
-                    acc = func(acc, item);
-                    yield acc;
-                }
-            })()
-        );
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -443,17 +443,21 @@ class ZiltIterator<T> {
                 "Invalid depth for flatten, allowed range is [0, 10]"
             );
 
-        function* recurse<U>(depth: number, it: Iterable<U>): any {
+        function* recursiveFlatten<U>(
+            it: Iterable<U>,
+            depth: number = maxDepth
+        ): any {
             for (const item of it) {
-                if (Symbol.iterator in Object(item) && depth !== maxDepth) {
-                    yield* recurse(depth + 1, item as any);
+                if (Symbol.iterator in Object(item) && depth !== 0) {
+                    yield* recursiveFlatten(item as any, depth - 1);
                 } else {
                     yield item;
                 }
             }
         }
 
-        return iter(recurse(0, this.generator()));
+        const iterable = recursiveFlatten(this.generator());
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -466,26 +470,26 @@ class ZiltIterator<T> {
      *   .collect();
      */
     chunks(k: number) {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let chunk = [];
+        const iterable = (function* () {
+            let chunk = [];
 
-                for (const item of previous()) {
-                    chunk.push(item);
+            for (const item of source()) {
+                chunk.push(item);
 
-                    if (chunk.length === k) {
-                        yield chunk;
-                        chunk = [];
-                    }
-                }
-
-                if (chunk.length !== 0) {
+                if (chunk.length === k) {
                     yield chunk;
+                    chunk = [];
                 }
-            })()
-        );
+            }
+
+            if (chunk.length !== 0) {
+                yield chunk;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -500,28 +504,28 @@ class ZiltIterator<T> {
     windows(k: number) {
         if (k <= 0) throw new ZiltError("Invalid window length");
 
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let window: T[] = [];
-                let yielded = false;
+        const iterable = (function* () {
+            let window: T[] = [];
+            let yielded = false;
 
-                for (const item of previous()) {
-                    window.push(item);
+            for (const item of source()) {
+                window.push(item);
 
-                    if (window.length === k) {
-                        yield window;
-                        yielded = true;
-                        window = window.slice(1);
-                    }
-                }
-
-                if (!yielded) {
+                if (window.length === k) {
                     yield window;
+                    yielded = true;
+                    window = window.slice(1);
                 }
-            })()
-        );
+            }
+
+            if (!yielded) {
+                yield window;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -534,18 +538,18 @@ class ZiltIterator<T> {
      *   .collect();
      */
     enumerate(): ZiltIterator<[T, number]> {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let index = 0;
+        const iterable = (function* () {
+            let index = 0;
 
-                for (const item of previous()) {
-                    yield [item, index] as [T, number];
-                    index += 1;
-                }
-            })()
-        );
+            for (const item of source()) {
+                yield [item, index] as [T, number];
+                index += 1;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -560,20 +564,20 @@ class ZiltIterator<T> {
     step(step: number) {
         if (step <= 0) throw new ZiltError("Invalid step");
 
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                let index = 0;
+        const iterable = (function* () {
+            let index = 0;
 
-                for (const item of previous()) {
-                    if (index % step === 0) {
-                        yield item;
-                    }
-                    index += 1;
+            for (const item of source()) {
+                if (index % step === 0) {
+                    yield item;
                 }
-            })()
-        );
+                index += 1;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -588,25 +592,25 @@ class ZiltIterator<T> {
     zip<I extends Iterable<any>[]>(
         ...iterables: I
     ): ZiltIterator<[T, ...MapToIterType<I>]> {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                const iters = [
-                    previous(),
-                    ...iterables.map((it) => it[Symbol.iterator]()),
-                ];
+        const iterable = (function* () {
+            const iters = [
+                source(),
+                ...iterables.map((it) => it[Symbol.iterator]()),
+            ];
 
-                let results = iters.map((it) => it.next());
+            let results = iters.map((it) => it.next());
 
-                while (results.every((res) => !res.done)) {
-                    const values = results.map((res) => res.value);
-                    yield values as [T, ...MapToIterType<I>];
+            while (results.every((res) => !res.done)) {
+                const values = results.map((res) => res.value);
+                yield values as [T, ...MapToIterType<I>];
 
-                    results = iters.map((it) => it.next());
-                }
-            })()
-        );
+                results = iters.map((it) => it.next());
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -620,21 +624,17 @@ class ZiltIterator<T> {
     unzip(): Unzip<T> {
         let outLists: any = [];
 
-        const updateLen = (n: number) => {
-            const oldLen = outLists.length;
-            outLists.length = Math.max(oldLen, n);
-            for (let i = oldLen; i < outLists.length; i++) {
-                outLists[i] = [];
-            }
-        };
-
         for (const item of this.generator()) {
             if (Array.isArray(item) === false) {
                 throw new ZiltError("Element type is not an array");
             }
 
             const list: any = item;
-            updateLen(list.length);
+            const oldLen = outLists.length;
+            outLists.length = Math.max(oldLen, list.length);
+            for (let i = oldLen; i < outLists.length; i++) {
+                outLists[i] = [];
+            }
 
             let index = 0;
             for (const elem of list) {
@@ -816,21 +816,21 @@ class ZiltIterator<T> {
     chain<I extends Iterable<any>[]>(
         ...iterables: I
     ): ZiltIterator<T | TupleToUnion<MapToIterType<I>>> {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                for (const item of previous()) {
+        const iterable = (function* () {
+            for (const item of source()) {
+                yield item;
+            }
+
+            for (const it of iterables) {
+                for (const item of it) {
                     yield item;
                 }
+            }
+        })();
 
-                for (const it of iterables) {
-                    for (const item of it) {
-                        yield item;
-                    }
-                }
-            })()
-        );
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -851,25 +851,25 @@ class ZiltIterator<T> {
     cycle(count: number = Infinity) {
         if (count < 0) throw new ZiltError("Invalid count parameter");
 
-        const previous = this.generator;
+        const source = this.generator;
         const buffered: T[] = [];
 
-        return iter(
-            (function* () {
-                if (count === 0) return;
+        const iterable = (function* () {
+            if (count === 0) return;
 
-                for (const item of previous()) {
-                    buffered.push(item);
+            for (const item of source()) {
+                buffered.push(item);
+                yield item;
+            }
+
+            while (--count) {
+                for (const item of buffered) {
                     yield item;
                 }
+            }
+        })();
 
-                while (--count) {
-                    for (const item of buffered) {
-                        yield item;
-                    }
-                }
-            })()
-        );
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -884,19 +884,19 @@ class ZiltIterator<T> {
     stretch(count: number) {
         if (count < 0) throw new ZiltError("Invalid stretch parameter");
 
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                if (count === 0) return;
+        const iterable = (function* () {
+            if (count === 0) return;
 
-                for (const item of previous()) {
-                    for (const _ of range(0, count)) {
-                        yield item;
-                    }
+            for (const item of source()) {
+                for (let i = 0; i < count; i++) {
+                    yield item;
                 }
-            })()
-        );
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -909,7 +909,7 @@ class ZiltIterator<T> {
     forEach(func: (val: T, index: number) => unknown) {
         let index = 0;
 
-        for (const element of this) {
+        for (const element of this.generator()) {
             func(element, index);
             index += 1;
         }
@@ -984,20 +984,20 @@ class ZiltIterator<T> {
      *   .collect();
      */
     uniqueBy(getKey: (element: T) => unknown) {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                const seen = new Set();
+        const iterable = (function* () {
+            const seen = new Set();
 
-                for (const item of previous()) {
-                    if (seen.has(getKey(item)) === false) {
-                        yield item;
-                        seen.add(getKey(item));
-                    }
+            for (const item of source()) {
+                if (seen.has(getKey(item)) === false) {
+                    yield item;
+                    seen.add(getKey(item));
                 }
-            })()
-        );
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -1014,16 +1014,16 @@ class ZiltIterator<T> {
      *   .consume();
      */
     inspect(func: (element: T) => unknown) {
-        const previous = this.generator;
+        const source = this.generator;
 
-        return iter(
-            (function* () {
-                for (const item of previous()) {
-                    func(item);
-                    yield item;
-                }
-            })()
-        );
+        const iterable = (function* () {
+            for (const item of source()) {
+                func(item);
+                yield item;
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**
@@ -1072,39 +1072,37 @@ class ZiltIterator<T> {
             return this._nestRange(...(args as number[]));
         }
 
-        const previous = this.generator;
+        const source = this.generator;
+        const nested = Array.isArray(args[0]) ? args[0] : [...args[0]];
 
-        const [iterable] = args;
-        const nested = Array.isArray(iterable) ? iterable : [...iterable];
-
-        return iter(
-            (function* () {
-                for (const i of previous()) {
-                    for (const j of nested) {
-                        yield [i, j];
-                    }
+        const iterable = (function* () {
+            for (const i of source()) {
+                for (const j of nested) {
+                    yield [i, j];
                 }
-            })()
-        );
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     private _nestRange(...args: number[]): ZiltIterator<[T, number]> {
-        const previous = this.generator;
-
         let start = 0,
             end = Infinity;
 
         if (args.length === 2) [start, end] = args;
         else if (args.length === 1) end = args[0];
 
-        return iter(
-            (function* () {
-                for (const i of previous()) {
-                    for (const j of range(start, end)) {
-                        yield [i, j];
-                    }
+        const source = this.generator;
+
+        const iterable = (function* () {
+            for (const i of source()) {
+                for (const j of range(start, end)) {
+                    yield [i, j] as [T, number];
                 }
-            })()
-        );
+            }
+        })();
+
+        return new ZiltIterator(iterable);
     }
 }
