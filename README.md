@@ -59,7 +59,7 @@
                         <li><a href="#once">once()</a></li>
                         <li><a href="#range">range()</a></li>
                         <li><a href="#chain">chain()</a></li>
-                        <li><a href="#chain">zip()</a></li>
+                        <li><a href="#zip">zip()</a></li>
                     </ul>
                 </details>
             </li>
@@ -210,6 +210,8 @@ function draw(matrix) {
         matrix[y][x] = 'O';
         [y, x] = [y + ystep, x + xstep];
     }
+
+    return matrix;
 }
 ```
 
@@ -227,6 +229,8 @@ function draw(matrix) {
         .accumulate(([y, x], [ys, xs]) => [y + ys, x + xs])
         .takeWhile(([_, x]) => x < width)
         .forEach(([y, x]) => (matrix[y][x] = 'O'));
+
+    return matrix;
 }
 ```
 
