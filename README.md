@@ -1,20 +1,4 @@
 <div id="top"></div>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 <div align="center">
 
 <a href="">[![Build](https://circleci.com/gh/luismeyer95/zilt.svg?style=shield&circle-token=d674f84f39bcfc08996d2f783aaf67c036ba4cf3)](https://app.circleci.com/pipelines/github/luismeyer95/zilt)</a>
@@ -24,21 +8,19 @@
 
 </div>
 
-<!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <img src="https://i.imgur.com/V9jWp3N.png" alt="Logo" width="300" height="300">
   <p align="center">
     <h2>A lazy iterator library in TypeScript.</h2>
-    <br />
     <a href="https://github.com/luismeyer95/zilt/issues">Report Bug</a>
     ·
     <a href="https://github.com/luismeyer95/zilt/issues">Request Feature</a>
   </p>
 </div>
+<br />
 
-<!-- TABLE OF CONTENTS -->
-  <summary><h1><b>Table of Contents</b></h1></summary>
+<summary><h1><b>Table of Contents</b></h1></summary>
   <ol>
     <li>
         <a href="#presentation">Presentation</a>
@@ -123,12 +105,12 @@
 
 # **Presentation**
 
-`zilt` is a TypeScript lazy [iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) library. It lets you wrap iterable objects to augment them with useful utility methods for declarative-style data processing. The library uses ES6 generators under the hood and has no dependencies.
+`zilt` is a TypeScript lazy [iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) library. It lets you create iterators with useful utility methods for declarative-style data processing. The library uses ES6 generators under the hood and has no dependencies.
 
-Awesome iterator libraries already exist, why create another?
+Some great iterator libraries already exist, why create another one?
 
 -   To learn about ES6 generators
--   To learn about creating and publishing libraries from scratch
+-   To learn about creating, publishing and maintaining open-source libraries
 -   For fun
 
 # **Installation**
@@ -147,7 +129,7 @@ const zilt = require("zilt");
 
 # **Example**
 
-Let's consider the following exercise: given a non-empty `height * width` matrix full of `.`'s, draw a zigzag pattern of `O`'s inside the matrix. This is a contrived example, but it helps demonstrate the capabilities of iterator adapters.
+Let's consider the following exercise: given a non-empty `height * width` matrix full of `.`'s, draw a zigzag pattern of `O`'s inside the matrix and return it. This is a contrived example, but it helps demonstrate the capabilities of `zilt` iterators.
 
 ```ts
 const input = [
@@ -163,25 +145,20 @@ const output = [
     ["O", "O", ".", "O", "O", ".", "O", "O", "."],
     ["O", ".", ".", "O", ".", ".", "O", ".", "."],
 ];
-
-expect(draw(input)).toMatchObject(output);
 ```
 
-To solve this problem, we will want to iterate over matrix positions starting from `[0, 0]`, moving either down or to the top right at each iteration.
+To visit the cells that need to be replaced with an `O`, we want to iterate over matrix positions starting from `[0, 0]` moving either down or to the top right at each iteration.
 
-The steps between cells can be described as follows:
+The step algorithm can be described as follows:
 
 -   `height - 1` vertical steps down are taken to reach the bottom of the matrix (direction: `[1, 0]`)
 -   `height - 1` diagonal steps to the top right are taken to reach the top again (direction: `[-1, 1]`)
--   Repeat to infinity
+-   Repeat
 
-We can create a `zilt` iterator over the step sequence from above using the <a href="#stretch">.stretch()</a> and <a href="#cycle">.cycle()</a> methods.
+We can create a `zilt` iterator over the infinite step sequence from above using the <a href="#stretch">.stretch()</a> and <a href="#cycle">.cycle()</a> methods.
 
 ```ts
-import * as zilt from 'zilt';
-
-function draw(matrix) {
-    const height = matrix.length, width = matrix[0].length;
+function draw(matrix, height, width) {
     const down = [1, 0];
     const up = [-1, 1];
 
@@ -196,10 +173,12 @@ function draw(matrix) {
 From there, we just need to initialize some matrix coordinates to `[0, 0]` and apply each directional step to it in order to loop over the relevant cells and overwrite their content with `O`'s. Since the iterator loops indefinitely, we need to make sure to stop the drawing loop once the current coordinate is out of the matrix bounds.
 
 ```ts
-function draw(matrix) {
-    ...
+function draw(matrix, height, width) {
+    const down = [1, 0];
+    const up = [-1, 1];
 
-    const steps = zilt.iter([down, up])
+    const steps = zilt
+        .iter([down, up])
         .stretch(height - 1)
         .cycle();
 
@@ -207,7 +186,7 @@ function draw(matrix) {
     for (const [ystep, xstep] of steps) {
         if (x >= width) break;
 
-        matrix[y][x] = 'O';
+        matrix[y][x] = "O";
         [y, x] = [y + ystep, x + xstep];
     }
 
@@ -215,20 +194,23 @@ function draw(matrix) {
 }
 ```
 
-I'm not advocating for this code style, but here's another way of writing the above using this library.
+I wouldn't advise writing code in this style, but here's another way of solving this problem using `zilt` exclusively.
 
 ```ts
-function draw(matrix) {
-    ...
+function draw(matrix, height, width) {
+    const down = [1, 0];
+    const up = [-1, 1];
 
-    const steps = zilt.iter([down, up])
+    const steps = zilt
+        .iter([down, up])
         .stretch(height - 1)
         .cycle();
 
-    zilt.chain(zilt.once([0, 0]), steps)
+    zilt.once([0, 0])
+        .chain(steps)
         .accumulate(([y, x], [ys, xs]) => [y + ys, x + xs])
         .takeWhile(([_, x]) => x < width)
-        .forEach(([y, x]) => (matrix[y][x] = 'O'));
+        .forEach(([y, x]) => (matrix[y][x] = "O"));
 
     return matrix;
 }
