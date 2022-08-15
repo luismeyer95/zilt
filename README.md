@@ -149,10 +149,10 @@ const output = [
 
 To visit the cells that need to be replaced with an `O`, we want to iterate over matrix positions starting from `[0, 0]` moving either down or to the top right at each iteration.
 
-The step algorithm can be described as follows:
+With `[ystep, xstep]` denoting a vertical `ystep` move + a horizontal `xstep` move, the step algorithm can be described as follows:
 
--   `height - 1` vertical steps down are taken to reach the bottom of the matrix (direction: `[1, 0]`)
--   `height - 1` diagonal steps to the top right are taken to reach the top again (direction: `[-1, 1]`)
+-   `height - 1` vertical steps down (`[ystep, xstep] = [1, 0]`) are taken to reach the bottom of the matrix
+-   `height - 1` diagonal steps to the top right (`[ystep, xstep] = [-1, 1]`) are taken to reach the top again
 -   Repeat
 
 We can create a `zilt` iterator over the infinite step sequence from above using the <a href="#stretch">.stretch()</a> and <a href="#cycle">.cycle()</a> methods.
@@ -194,7 +194,7 @@ function draw(matrix, height, width) {
 }
 ```
 
-I wouldn't advise writing code in this style, but here's another way of solving this problem using `zilt` exclusively.
+I would advise against writing code in this style, but here's another way of solving this problem using `zilt` exclusively.
 
 ```ts
 function draw(matrix, height, width) {
