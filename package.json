@@ -1,6 +1,6 @@
 {
     "name": "zilt",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "A lazy iterator library in TypeScript.",
     "main": "build/zilt.umd.min.js",
     "types": "build/zilt.d.ts",
