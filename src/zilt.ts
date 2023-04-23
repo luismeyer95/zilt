@@ -156,8 +156,7 @@ class ZiltIterator<T> {
      *   .consume();
      */
     consume() {
-        for (const item of this) {
-        }
+        [...this];
     }
 
     /**
@@ -227,7 +226,7 @@ class ZiltIterator<T> {
         const source = this.generator;
 
         const iterable = (function* () {
-            let iter = source();
+            const iter = source();
             for (let i = 0; i < num; ++i) {
                 iter.next();
             }
@@ -252,7 +251,7 @@ class ZiltIterator<T> {
         const source = this.generator;
 
         const iterable = (function* () {
-            let iter = source();
+            const iter = source();
             let value = iter.next().value;
             let index = 0;
 
@@ -308,7 +307,7 @@ class ZiltIterator<T> {
         const source = this.generator;
 
         const iterable = (function* () {
-            let iter = source();
+            const iter = source();
             let value = iter.next().value;
             let index = 0;
 
@@ -344,7 +343,7 @@ class ZiltIterator<T> {
         const iter = this.generator();
 
         // Empty iterator without initializer, return early
-        let first = iter.next();
+        const first = iter.next();
         if (initializer === null && first.done) {
             throw new ZiltError(
                 "Reduce of empty iterator with no initial value"
@@ -385,7 +384,7 @@ class ZiltIterator<T> {
         const iter = this.generator();
 
         // Empty iterator without initializer, return early
-        let first = iter.next();
+        const first = iter.next();
         if (initializer === null && first.done) {
             throw new ZiltError(
                 "Reduce of empty iterator with no initial value"
@@ -622,7 +621,7 @@ class ZiltIterator<T> {
      *   .unzip();
      */
     unzip(): Unzip<T> {
-        let outLists: any = [];
+        const outLists: any = [];
 
         for (const item of this.generator()) {
             if (Array.isArray(item) === false) {
@@ -848,7 +847,7 @@ class ZiltIterator<T> {
      *   .take(8)
      *   .collect();
      */
-    cycle(count: number = Infinity) {
+    cycle(count = Infinity) {
         if (count < 0) throw new ZiltError("Invalid count parameter");
 
         const source = this.generator;
@@ -1035,12 +1034,33 @@ class ZiltIterator<T> {
      *   .slice(2, 4)
      *   .collect();
      */
-    slice(start: number, end: number = Infinity) {
+    slice(start: number, end = Infinity) {
         if (start < 0 || end < 0 || start > end) {
             throw new ZiltError("Invalid slice range");
         }
 
         return this.skip(start).take(end - start);
+    }
+
+    split(func: (element: T) => boolean) {
+        const source = this.generator;
+
+        const iterable = (function* () {
+            let buffer: T[] = [];
+
+            for (const item of source()) {
+                if (func(item)) {
+                    yield new ZiltIterator(buffer);
+                    buffer = [];
+                } else {
+                    buffer.push(item);
+                }
+            }
+
+            yield new ZiltIterator(buffer);
+        })();
+
+        return new ZiltIterator(iterable);
     }
 
     /**

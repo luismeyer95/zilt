@@ -3,7 +3,7 @@ import { range, iter, once, chain, zip } from "../zilt";
 describe("iter", () => {
     it("should create an array iterator", () => {
         let index = 0;
-        let arr = [{ prop: 1 }, { prop: 2 }, { prop: 3 }];
+        const arr = [{ prop: 1 }, { prop: 2 }, { prop: 3 }];
 
         for (const item of iter(arr)) {
             expect(item).toBe(arr[index]);
@@ -677,6 +677,36 @@ describe("slice", () => {
     });
 });
 
+describe("split", () => {
+    it("should split iterator in three", () => {
+        const [zero, two, four] = range(0, 5)
+            .split((x) => x % 2 !== 0)
+            .collect();
+
+        expect(zero.collect()).toMatchObject([0]);
+        expect(two.collect()).toMatchObject([2]);
+        expect(four.collect()).toMatchObject([4]);
+    });
+
+    it("should not split iterator", () => {
+        const [it] = range(5)
+            .split((x) => x === 5)
+            .collect();
+
+        expect([...it]).toMatchObject([...range(5)]);
+    });
+
+    it("should split iterator at the edge", () => {
+        const [empty1, it, empty2] = range(5)
+            .split((x) => x === 0 || x === 4)
+            .collect();
+
+        expect([...it]).toMatchObject([1, 2, 3]);
+        expect([...empty1]).toMatchObject([]);
+        expect([...empty2]).toMatchObject([]);
+    });
+});
+
 describe("nest", () => {
     it("should create a 2D iterator", () => {
         const pairs = [];
@@ -749,6 +779,18 @@ describe("chaos", () => {
             .take(9);
 
         expect(it.collect()).toMatchObject([0, 3, 6, 1, 4, 7, 2, 5, 0]);
+    });
+
+    it("should offset each word by two characters", () => {
+        const result = iter("Hi hey hello hola bonjour")
+            .split((ch) => ch === " ")
+            .map((it) => {
+                const word = it.collect().join("");
+                return word.slice(2) + word.slice(0, 2);
+            })
+            .collect()
+            .join(" ");
+        expect(result).toBe("Hi yhe llohe laho njourbo");
     });
 
     it("should draw a zigzag pattern in the matrix", () => {
